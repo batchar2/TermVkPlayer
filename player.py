@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 
+#from __future__ import unicode_literals
+import gobject
 import sys
 import locale
 import signal
+import random
+import thread
+import datetime
+import threading
+import time
+import getpass
+
 
 import curses
 import vk_api
 
-import datetime
-import threading
-import time
 
 import pygst
 
@@ -17,144 +23,19 @@ pygst.require("0.10")
 
 import gst
 
+from unidecode import unidecode
+
 locale.setlocale(locale.LC_ALL,"")
 
-login, password = 'skokov1992@mail.ru', 'Piramida2'
 
 PG_NAME = "TermVkPlayer"
 PG_VERSION = "v0.01"
 
-response = {
-    u'count': 605, 
-    u'items': [
-        {
-            u'title': u'Ashes (Original Mix)', 
-            u'url': u'http://cs4-4v4.vk-cdn.net/p1/d0778bcd1ae199.mp3', 
-            u'artist': u'Sarah Lynn, Denis Kenzo ', 
-            u'lyrics_id': 239309635, 
-            u'duration': 413, 
-            u'genre_id': 11, 
-            u'id': 381090536, 
-            u'owner_id': 112637865
-        }, 
-        {
-            u'title': u'Sound Of Goodbye (DJ Runo Remix)', 
-            u'url': u'http://cs4-2v4.vk-cdn.net/p1/854a3865c9bd95.mp3', 
-            u'artist': 
-            u'Armin Van Buuren', 
-            u'lyrics_id': 258045600, 
-            u'duration': 337, 
-            u'genre_id': 1001, 
-            u'id': 381058166, 
-            u'owner_id': 112637865
-        },
-        {
-            u'title': u'Ashes (Original Mix)', 
-            u'url': u'http://cs4-4v4.vk-cdn.net/p1/d0778bcd1ae199.mp3', 
-            u'artist': u'Sarah Lynn, Denis Kenzo ', 
-            u'lyrics_id': 239309635, 
-            u'duration': 413, 
-            u'genre_id': 11, 
-            u'id': 381090536, 
-            u'owner_id': 112637865
-        }, 
-        {
-            u'title': u'Sound Of Goodbye (DJ Runo Remix)', 
-            u'url': u'http://cs4-2v4.vk-cdn.net/p1/854a3865c9bd95.mp3', 
-            u'artist': 
-            u'Armin Van Buuren', 
-            u'lyrics_id': 258045600, 
-            u'duration': 337, 
-            u'genre_id': 1001, 
-            u'id': 381058166, 
-            u'owner_id': 112637865
-        },
-        {
-            u'title': u'Ashes (Original Mix)', 
-            u'url': u'http://cs4-4v4.vk-cdn.net/p1/d0778bcd1ae199.mp3', 
-            u'artist': u'Sarah Lynn, Denis Kenzo ', 
-            u'lyrics_id': 239309635, 
-            u'duration': 413, 
-            u'genre_id': 11, 
-            u'id': 381090536, 
-            u'owner_id': 112637865
-        }, 
-        {
-            u'title': u'Sound Of Goodbye (DJ Runo Remix)', 
-            u'url': u'http://cs4-2v4.vk-cdn.net/p1/854a3865c9bd95.mp3', 
-            u'artist': 
-            u'Armin Van Buuren', 
-            u'lyrics_id': 258045600, 
-            u'duration': 337, 
-            u'genre_id': 1001, 
-            u'id': 381058166, 
-            u'owner_id': 112637865
-        },
-        {
-            u'title': u'Ashes (Original Mix)', 
-            u'url': u'http://cs4-4v4.vk-cdn.net/p1/d0778bcd1ae199.mp3', 
-            u'artist': u'Sarah Lynn, Denis Kenzo ', 
-            u'lyrics_id': 239309635, 
-            u'duration': 413, 
-            u'genre_id': 11, 
-            u'id': 381090536, 
-            u'owner_id': 112637865
-        }, 
-        {
-            u'title': u'Sound Of Goodbye (DJ Runo Remix)', 
-            u'url': u'http://cs4-2v4.vk-cdn.net/p1/854a3865c9bd95.mp3', 
-            u'artist': 
-            u'Armin Van Buuren', 
-            u'lyrics_id': 258045600, 
-            u'duration': 337, 
-            u'genre_id': 1001, 
-            u'id': 381058166, 
-            u'owner_id': 112637865
-        },
-        {
-            u'title': u'Ashes (Original Mix)', 
-            u'url': u'http://cs4-4v4.vk-cdn.net/p1/d0778bcd1ae199.mp3', 
-            u'artist': u'Sarah Lynn, Denis Kenzo ', 
-            u'lyrics_id': 239309635, 
-            u'duration': 413, 
-            u'genre_id': 11, 
-            u'id': 381090536, 
-            u'owner_id': 112637865
-        }, 
-        {
-            u'title': u'Sound Of Goodbye (DJ Runo Remix)', 
-            u'url': u'http://cs4-2v4.vk-cdn.net/p1/854a3865c9bd95.mp3', 
-            u'artist': 
-            u'Armin Van Buuren', 
-            u'lyrics_id': 258045600, 
-            u'duration': 337, 
-            u'genre_id': 1001, 
-            u'id': 381058166, 
-            u'owner_id': 112637865
-        },
-        {
-            u'title': u'Ashes (Original Mix)', 
-            u'url': u'http://cs4-4v4.vk-cdn.net/p1/d0778bcd1ae199.mp3', 
-            u'artist': u'Sarah Lynn, Denis Kenzo ', 
-            u'lyrics_id': 239309635, 
-            u'duration': 413, 
-            u'genre_id': 11, 
-            u'id': 381090536, 
-            u'owner_id': 112637865
-        }, 
-        {
-            u'title': u'Sound Of Goodbye (DJ Runo Remix)', 
-            u'url': u'http://cs4-2v4.vk-cdn.net/p1/854a3865c9bd95.mp3', 
-            u'artist': 
-            u'Armin Van Buuren', 
-            u'lyrics_id': 258045600, 
-            u'duration': 337, 
-            u'genre_id': 1001, 
-            u'id': 381058166, 
-            u'owner_id': 112637865
-        }
-    ]
-}
+
+# перемещение на время
+PG_SEEK_TIME = 30
+# время срабатывания таймера
+TIME_SLEEP = 0.3
 
 
 """
@@ -208,7 +89,7 @@ class SystemInfoWin(BaseWin):
         self.refresh()
 
     def set_sound_volume(self, volume):
-        self.volume = "%s%%" % str( float(round(volume, 2))*100)
+        self.volume = "%d%%" % int(float(round(volume, 2))*100)
         self.win.addstr(4, 2, self.__tmpl.format('Volume', self.volume), curses.color_pair(6))        
         self.refresh()
 
@@ -223,11 +104,11 @@ class TrakInfoWin(BaseWin):
         super(TrakInfoWin, self).__init__(parent_win, rows, cols, x, y)
 
         self.win_set_title(u"Info track")
-        self.__tmpl = "{0:7} {1:>%d}" % (self.cols - 12)
+        self.__tmpl = "{0:7} {1:>%d}" % (self.cols-11)
 
     def set_data(self, trak_data):
-        self.win.addstr(2, 2, self.__tmpl.format('Title:', trak_data[u'title']), curses.color_pair(6))
-        self.win.addstr(3, 2, self.__tmpl.format('Artist:', trak_data[u'artist']), curses.color_pair(6))
+        self.win.addstr(2, 2, self.__tmpl.format('Title:', trak_data[u'title'].encode('utf-8')), curses.color_pair(6))
+        self.win.addstr(3, 2, self.__tmpl.format('Artist:', trak_data[u'artist'].encode('utf-8')), curses.color_pair(6))
         self.win.addstr(4, 2, self.__tmpl.format('Albom:', "  "), curses.color_pair(6))
         self.refresh()
 
@@ -236,7 +117,7 @@ class TrakInfoWin(BaseWin):
         self.win.addstr(2, 2, self.__tmpl.format(' ', ' '), curses.color_pair(6))
         self.win.addstr(2, 3, self.__tmpl.format(' ', ' '), curses.color_pair(6))
         self.win.addstr(2, 2, self.__tmpl.format(' ', ' '), curses.color_pair(6))
-
+        #super(TrakInfoWin, self).refresh()
         self.refresh()
 
 
@@ -247,20 +128,76 @@ class EkvalayzerWin(BaseWin):
     def __init__(self, parent_win, rows, cols, x, y):
         super(EkvalayzerWin, self).__init__(parent_win, rows, cols, x, y)
 
-        self.win.addstr(1, 2, u"    8     = 8               8", curses.color_pair(150))
-        self.win.addstr(2, 2, u"  8888    88888            88 ", curses.color_pair(150))
-        self.win.addstr(3, 2, u" 888888   88888           888 ", curses.color_pair(150))
-        self.win.addstr(4, 2, u"88888888888888888888888888888888888888888888", curses.color_pair(150))
-
         self.win_set_title("Ekvalayzer")
+    
+        self.__size_bar = self.cols - 3
+        self.__str_format = '{:%d}' % (self.__size_bar)
+        self.init_ekv()
 
+        self.refresh()
+        #self.draw()
+
+
+    def draw(self):
+        self.__ekv_bar = self.__str_format.format(' ')
+        
+        i = 2
+        j = 1
+        for k in range(4):
+            i = 2
+            self.win.addstr(j, i, self.__ekv_bar)
+            for c in self.__ekv_bar:
+                # нарастает
+                if self.ekv_rows[k]['is_plus'] is True:
+                    # наращиваем до текущего значения
+                    if i < self.ekv_rows[k]['value']:
+                        self.win.addstr(j, i, c, curses.color_pair(10+j))
+                    elif i == self.__size_bar -1:
+                        self.ekv_rows[k]['is_plus'] = False
+                    elif i == self.ekv_rows[k]['value']:
+                        # увеличиваем порог
+                        self.ekv_rows[k]['value'] += 1
+                        break
+                else:
+                    # наращиваем до текущего значения
+                    if i < self.ekv_rows[k]['value'] - 2:
+                        self.win.addstr(j, i, c, curses.color_pair(10+j))
+                    elif i == 2:
+                        self.ekv_rows[k]['is_plus'] = True
+                    elif i == self.ekv_rows[k]['value'] - 1:
+                        # увеличиваем порог
+                        self.ekv_rows[k]['value'] -= 1
+                        break
+                i += 1
+            j += 1
+
+        self.refresh()
+        
+
+    # инициализация псевдовизуализатора
+    def init_ekv(self):
+        self.ekv_rows = []
+        for i in xrange(0, 4):
+            r  = {
+                'value': int(random.random() * 100) % (self.__size_bar-5), 
+                "is_plus": True
+            }
+            if r['value'] == 0:
+                r['value'] = 5
+
+            # is_plus = True -- возраставет, иначе - убывает
+            if r['value'] % 2 == 0: r['is_plus'] = False    
+            self.ekv_rows.append(r)
+
+        
+        
 """
 Отдельное окно с информацией и времени и шкалой прогресса воспроизведения
 """
 class TrakDurationWin(BaseWin):
     def __init__(self, parent_win, rows, cols, x, y):
         super(TrakDurationWin, self).__init__(parent_win, rows, cols, x, y)
-        self.__size_bar = self.cols - 2
+        self.__size_bar = self.cols - 3
 
     def __get_time(self, current_time, total_time):
         current = time.strftime("%H:%M:%S", time.gmtime(current_time))
@@ -275,10 +212,11 @@ class TrakDurationWin(BaseWin):
             self.__progres_bar = self.__str_format.format(self.__get_time(current_time, total_time))
             
             index = -1
-            if current_time != 0:
-                delta = total_time / self.__size_bar
-                index = current_time / delta
-                
+            if current_time != 0 and total_time != 0:
+                delta = float(self.__size_bar) / float(total_time)  
+                index = int(current_time * delta) 
+
+            # вывожу прогресс-бар    
             i = 0
             for c in self.__progres_bar:
                 if index >= i:
@@ -286,14 +224,7 @@ class TrakDurationWin(BaseWin):
                 else: 
                     self.win.addstr(1, i+1, c, curses.color_pair(5))
                 i += 1
-            #self.__write_bar(current_time, total_time)
             self.refresh()
-            #print self.win.getch(1,5)
-
-            # вывожу прогресс-бар
-            
-            
-        
 
 """
 Содержится картинка и информация для управления приложением. Картинка, ну - это прикольно :)
@@ -302,13 +233,15 @@ class NavigationWin(BaseWin):
     def __init__(self, parent_win, rows, cols, x, y):
         super(NavigationWin, self).__init__(parent_win, rows, cols, x, y)
 
-
         self.win_set_title("Help")
-        self.win.addstr(1, 2, u"Start/Stop  \t\t Enter")
-        self.win.addstr(2, 2, u"Pause       \t\t Space")
-        self.win.addstr(3, 2, u"Move Up/Down\t\t Up/Down")
-        self.win.addstr(4, 2, u"Sound       \t\t Left/Right")
-        self.win.addstr(5, 2, u"Save        \t\t S")
+
+        self.__tmpl = '{0:16}  {1:>%d}' % (self.cols/2)
+        self.win.addstr(1, 2, self.__tmpl.format('Start/Stop', '<Enter>'))
+        self.win.addstr(2, 2, self.__tmpl.format('Pause', '<Space>'))
+        self.win.addstr(3, 2, self.__tmpl.format('Move Up/Down', '<Up/Down>'))
+        self.win.addstr(4, 2, self.__tmpl.format('Sound', '<Left/Right>'))
+        self.win.addstr(5, 2, self.__tmpl.format('Seek', '<A/D>'))
+        self.win.addstr(7, 2, self.__tmpl.format('Save', '<S>'))        
 
         """
         self.win.addstr(9, 2, "                 .88888888:. ", curses.color_pair(7))      
@@ -338,13 +271,6 @@ class NavigationWin(BaseWin):
         self.win.addstr(33, 2, "     .:::::::::::88888888888.88:::::::::' ")
         self.win.addstr(34, 2, "         `':::_:' -- '' -'-' `':_::::'`")
         """
-
-        self.win_set_title("Help")
-        self.win.addstr(1, 2, u"Start/Stop  \t\t Enter")
-        self.win.addstr(2, 2, u"Pause       \t\t Space")
-        self.win.addstr(3, 2, u"Move Up/Down\t\t Up/Down")
-        self.win.addstr(4, 2, u"Sound       \t\t Left/Right")
-        self.win.addstr(5, 2, u"Save        \t\t S")
 
         self.win.addstr(9, 2, "                 .88888888:. ", curses.color_pair(7))      
         self.win.addstr(10, 2, "                88888888888888.", curses.color_pair(7))      
@@ -418,7 +344,7 @@ class NavigationWin(BaseWin):
         self.win.addstr(34, 19, "-- '' -'-' ", curses.color_pair(7))
         self.win.addstr(34, 32, "`':_::::'`", curses.color_pair(8))
 
-
+        self.refresh()
 """
 Список музыкальных произведений. Реализован скролинг и выбор.
 """
@@ -470,14 +396,13 @@ class TrakListWin(BaseWin):
             '18': 'Other',
         }
 
-        tmp_cols = self.cols - 39
-        self.__autor_title_size = tmp_cols/2
-        self.__trak_title_size = tmp_cols - (tmp_cols/2)
+        tmp_cols = self.cols - 38
+        self.__autor_title_size = tmp_cols/3
+        self.__trak_title_size = tmp_cols - (tmp_cols/3)
 
         #                      ->    id     Title   Author   Genre    Time        
-        self.__format_str = "{0:2} {1:3}  {2:<%d} {3:%d} {4:18}  {5:.8}" % (self.__trak_title_size, 
+        self.__format_str = "{0:2} {1:3} {2:%d} {3:%d} {4:18} {5:.8}" % (self.__trak_title_size,
             self.__autor_title_size)
-    
 
     def __get_genre_name(self, key):
         if str(key) in self.genres:
@@ -492,12 +417,28 @@ class TrakListWin(BaseWin):
 
         for item in data['items']:
             # сохраняю элементы в списке
+            if u'artist' in item:
+                if item[u'artist'][0] == ' ':
+                    item[u'artist'] = item[u'artist'][1:]
+                item[u'artist'] = self.__translit(item[u'artist']).replace('  ', ' ')[0:self.__autor_title_size-1]
+            else:
+                item[u'artist'] = ' '
+
+            if u'title' in item:
+                if item[u'title'][0] == ' ':
+                    item[u'title'] = item[u'title'][1:]
+                item[u'title'] = '- ' +self.__translit(item[u'title']).replace('  ', ' ')[0:self.__trak_title_size-3]
+            else:
+                item[u'title'] = ' '
+
+            if u'genre_id' not in item:
+                item[u'genre_id'] = '18'            
             self.data.append(item)
 
             # рисую стрелочку перед треком, как указатель текущей позиции "крашу" строку
             self.__ptr, self.__color = '  ', curses.color_pair(2)
             if self.count_data == 0:
-                self.__ptr, self.__color = '->', curses.color_pair(1)
+                self.__ptr, self.__color = ' ', curses.color_pair(3)
 
             self.__rewrite_record_list_item(self.count_data,
                 item, self.__color, self.__ptr)
@@ -505,22 +446,28 @@ class TrakListWin(BaseWin):
             self.count_data += 1
 
         self.refresh()
+        self.trak_list_pad.refresh(self.begin_win, 0, self.x+1, 1, self.rows+7, self.cols)
 
     
     """ Перерисовывает список. В зависимости от позиции курсора показывает определенную часть списка """
     def refresh(self):
+
         super(TrakListWin, self).refresh()
-        
         if self.current_position > self.end_win:
-            self.begin_win += (self.list_size/2)
-            self.end_win += (self.list_size/2)
-            self.trak_list_pad.refresh(self.begin_win, 0, self.x+1, 1, self.rows+7, self.cols)
+            if self.end_win >= self.count_data -1:
+                return
+            else:
+                self.begin_win += (self.list_size/2)
+                self.end_win += (self.list_size/2)
         elif self.current_position < self.begin_win:
-            self.begin_win -= (self.list_size/2)
-            self.end_win -= (self.list_size/2)
-            self.trak_list_pad.refresh(self.begin_win, 0, self.x+1, 1, self.rows+7, self.cols)
-        elif self.current_position < self.count_data:
-            self.trak_list_pad.refresh(self.begin_win, 0, self.x+1, 1, self.rows+7, self.cols)
+            if self.current_position <= 0:
+                return
+            else:
+                self.begin_win -= (self.list_size/2)
+                self.end_win -= (self.list_size/2)
+        
+        self.trak_list_pad.refresh(self.begin_win, 0, self.x+1, 1, self.rows+7, self.cols)
+            
 
     """ секунды в нормальное, человеческое представление """
     def __get_time(self, total_time):
@@ -528,7 +475,7 @@ class TrakListWin(BaseWin):
         return "%s" %(total)
 
     """ перерисовываю элемент списка """
-    def __rewrite_record_list_item(self, position, data_item, color, ptr):
+    def __rewrite_record_list_item(self, position, data_item, color, ptr):                
         #     ->      id     Title   Author   Genre    Time 
         self.trak_list_pad.addstr(position, 1, self.__format_str.format(
                 ptr, 
@@ -540,40 +487,44 @@ class TrakListWin(BaseWin):
             ), 
             color
         )
+        
 
+    def __translit(self, locallangstring):
+        return unidecode(locallangstring)
+        
     """ Перемещение указателя вверх """
     def move_up(self):
-        if self.current_position != 0:
-            
+        if self.current_position > 0:
+            ## отмечаю проигрываемый трек
             if self.current_position == self.select_positon:
                 self.__rewrite_record_list_item(self.current_position, 
-                    self.data[self.current_position], curses.color_pair(3), '  ')
+                    self.data[self.current_position], curses.color_pair(1), '->')
             else:
                 self.__rewrite_record_list_item(self.current_position, 
                     self.data[self.current_position], curses.color_pair(2), '  ')
 
             self.current_position -= 1
-
-            self.__rewrite_record_list_item(self.current_position, 
-                self.data[self.current_position], curses.color_pair(1), '->')
-            
+            if self.current_position != self.select_positon:
+                self.__rewrite_record_list_item(self.current_position, 
+                    self.data[self.current_position], curses.color_pair(3), '  ')
+                
             self.refresh()
 
     """ Перемещение указателя вниз """
     def move_down(self):
         if self.current_position < self.count_data - 1:
-
+            # отмечаю проигрываемый трек
             if self.current_position == self.select_positon:
                 self.__rewrite_record_list_item(self.current_position, 
-                    self.data[self.current_position], curses.color_pair(3), '  ')
+                    self.data[self.current_position], curses.color_pair(1), '->')
             else:
                 self.__rewrite_record_list_item(self.current_position, 
                     self.data[self.current_position], curses.color_pair(2), '  ')
-                
+                    
             self.current_position += 1
-
-            self.__rewrite_record_list_item(self.current_position, 
-                self.data[self.current_position], curses.color_pair(1), '->')
+            if self.current_position != self.select_positon:
+                self.__rewrite_record_list_item(self.current_position, 
+                    self.data[self.current_position], curses.color_pair(3), '  ')
 
             self.refresh()
 
@@ -582,32 +533,73 @@ class TrakListWin(BaseWin):
         # "разотмечаю" предыдущую позицию
         if self.select_positon != -1:
             self.__rewrite_record_list_item(self.select_positon, 
-                    self.data[self.current_position], curses.color_pair(2), '  ')
+                    self.data[self.select_positon], curses.color_pair(2), '  ')
 
 
         self.select_positon = self.current_position
         # отмечаю новую
         self.__rewrite_record_list_item(self.select_positon, 
-                self.data[self.current_position], curses.color_pair(3), '->')
+                self.data[self.select_positon], curses.color_pair(1), '->')
 
         self.refresh()
-            
-
-        return self.data[self.current_position]
-
+    
+        return self.data[self.select_positon]
 
 
+    """ переключает на след.трек,вызывается автоматически по завершению воспроизведения """
+    def next_trak(self):
+        if self.select_positon == self.count_data -1:
+            self.select_positon = 0
 
+        # затираю старое
+        if self.select_positon != -1:
+            self.__rewrite_record_list_item(self.select_positon, 
+                    self.data[self.select_positon], curses.color_pair(2), '  ')
+
+
+        # переписываю страку выбора, малоли-то
+        self.__rewrite_record_list_item(self.current_position, 
+                self.data[self.current_position], curses.color_pair(3), '  ')
+
+        self.select_positon += 1
+        # отмечаю новую
+        self.__rewrite_record_list_item(self.select_positon, 
+                self.data[self.select_positon], curses.color_pair(1), '->')
+        self.refresh()
+
+
+        return self.data[self.select_positon]
+
+
+
+""" Реализация плеера """
 class PlayerApp:
     def __init__(self):
+        #import gobject
+        #gobject.threads_init()
+
+        gobject.threads_init()
+        def start():
+            loop = gobject.MainLoop()
+            loop.run()
+        thread.start_new_thread(start, ())
+
+        #sys.stdout.close()
+        #sys.stderr.close()
+        #sys.stdin.close()
+
+
         self.__file = None
         self.player = gst.element_factory_make("playbin", "player")
-
+        self.is_eos = False
+        self.is_error = False
 
         self.bus = self.player.get_bus()
         self.bus.enable_sync_message_emission()
+
+
         self.bus.add_signal_watch()
-        self.bus.connect('message::tag', self.__on_tag)
+        self.bus.connect("message", self._handle_message)
 
         self.playing  = False
         self.cached_time = False
@@ -624,12 +616,14 @@ class PlayerApp:
     def pause(self):
         self.playing  = False
         self.player.set_state(gst.STATE_PAUSED)
-
+        self.is_eos = False
 
     def play(self):
         if self.__file is not None:
             self.playing  = True
             self.player.set_state(gst.STATE_PLAYING)
+            self.is_eos = False
+            self.is_error = False
 
     def set_sound_volume(self, volume):
         self.player.set_property('volume', volume)
@@ -658,35 +652,63 @@ class PlayerApp:
                 else:
                     return (0, 0)
 
+    # обработка сообщений 
+    def _handle_message(self, bus, msg):
+        if msg.type == gst.MESSAGE_EOS:
+            self.is_eos = True
+            self.player.set_state(gst.STATE_NULL)
 
-    def __on_tag(self, bus, msg):
-        taglist = msg.parse_tag()
-        #print 'on_tag:'
-        #for key in taglist.keys():
-        #    print '\t%s = %s' % (key, taglist[key])
+        elif msg.type == gst.MESSAGE_ERROR:
+            self.is_error = False
+            self.player.set_state(gst.STATE_NULL)
+            (err, debug) = msg.parse_error()
+            
+            sys.stderr.write("Error: %s  | %s" % (err, debug))
 
+    #bus.connect('message::error', self.process_error)
+
+
+    # пеермещщение по записи
+    def seek(self, position):
+        cur_pos, cur_len = self.time()
+        if position > cur_len:
+            self.stop()
+            return
+
+        fmt = gst.Format(gst.FORMAT_TIME)
+        ns = position * 10**9 # convert to nanoseconds
+        self.player.seek_simple(fmt, gst.SEEK_FLAG_FLUSH, ns)
 
 
 
 """ Инициализация curses, создание окон, запуск плеера в новом потоке и главный цикл приложения """
 class CursesApplication:
-    def __init__(self, player):
+    def __init__(self, player, vk):
 
         self.player = player
+        self.vk = vk
+
 
         self.stdscr = curses.initscr()
-        
+        self.stdscr.clear()
+#        curses.ACS_ULCORNER
         curses.cbreak()
         curses.noecho()
+        self.stdscr.keypad(0)
+
+        #curses.nocbreak()
+        #curses.echo()
+
+
+        #screen.keypad(0);
         curses.curs_set(0)
         curses.start_color()
-        #curses.assume_default_colors(-1,-1)
         curses.use_default_colors()
 
         # инициализация цветовых схем
         if curses.can_change_color(): 
             init_color(-1, 0, 0, 0)
-        #curses.init_color(0, 0, 0, 0)
+        
         # выделенный трек
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_YELLOW)
         # невыделенный трек
@@ -702,8 +724,14 @@ class CursesApplication:
         curses.init_pair(7, curses.COLOR_BLUE, -1)
         curses.init_pair(8, curses.COLOR_YELLOW, -1)
         curses.init_pair(9, curses.COLOR_WHITE, -1)
-
-
+        # эквалайзер
+        curses.init_pair(10, curses.COLOR_WHITE, curses.COLOR_WHITE)
+        curses.init_pair(11, curses.COLOR_CYAN, curses.COLOR_CYAN)
+        curses.init_pair(12, curses.COLOR_BLUE, curses.COLOR_BLUE)
+        curses.init_pair(13, curses.COLOR_YELLOW, curses.COLOR_YELLOW)
+        curses.init_pair(14, curses.COLOR_GREEN, curses.COLOR_GREEN)
+        curses.init_pair(15, curses.COLOR_RED, curses.COLOR_RED)
+        
         # получаю размеры экрана и оговариваю работу с клавиатурой
         self.stdscr.keypad(1)
         self.rows, self.cols = self.stdscr.getmaxyx()
@@ -728,11 +756,16 @@ class CursesApplication:
     # цикл для curses и по совместительству основной цикл приложения 
     def loop(self):
         # добавляю и вывожу данные
-        self.trak_list.add_data(response)
         
+        self.response = self.vk.method('audio.get', {'count':1000})
+        self.trak_list.add_data(self.response)
+            
         self.is_stop = False
         while self.is_stop is False:
-            self.ch = self.stdscr.getch()            
+            self.ch = self.stdscr.getch()
+            #time.sleep(0.009)
+            #self.stdscr.getstr()
+#            self.refresh()      
             # Up
             if  self.ch == 259:
                 self.trak_list.move_up()
@@ -743,20 +776,17 @@ class CursesApplication:
             elif self.ch == 260:
                 sound_vol = float(self.player.get_sound_volume())
                 if sound_vol > 0.01:
-                    sound_vol -= float(round(float(0.1), 1))
+                    sound_vol -= float(round(float(0.05), 2))
                     if sound_vol > 0:
-                        #print sound_vol
-                        self.player.set_sound_volume(round(sound_vol,1))
+                        self.player.set_sound_volume(round(sound_vol,2))
                         self.system_info.set_sound_volume(self.player.get_sound_volume())
-                    #self.system_info.set_sound_volume(self.player.get_sound_volume())
             # Right ++++
             elif self.ch == 261:
                 sound_vol = float(self.player.get_sound_volume())
                 if sound_vol < 1:
-                    sound_vol += float(round(float(0.1), 1))
+                    sound_vol += float(round(float(0.05), 2))
                     if sound_vol < 100:
-                        #print sound_vol
-                        self.player.set_sound_volume(sound_vol)
+                        self.player.set_sound_volume(round(sound_vol,2))
                         self.system_info.set_sound_volume(self.player.get_sound_volume())
             # Enter
             elif self.ch == 10:
@@ -774,18 +804,60 @@ class CursesApplication:
                 else:
                     self.system_info.set_status_playning()
                     self.player.play()
-            else:
+            # Q/q
+            elif self.ch == 113 or self.ch == 81:
                 self.is_stop = True
-
+            # Key D/d seeek -->
+            elif self.ch == 100 or self.ch == 68:
+                tm = self.player.time()
+                if tm is not None:
+                    cur, total = tm
+                    if total != 0:
+                        if cur + PG_SEEK_TIME < total:
+                            self.player.seek(cur + PG_SEEK_TIME)
+                        else:
+                            self.player.seek(total-1)
+            # Key A,a seek <----
+            elif self.ch == 97 or self.ch == 65:
+                tm = self.player.time()
+                if tm is not None:
+                    cur, total = tm
+                    if total != 0:
+                        if cur - PG_SEEK_TIME > 0:
+                            self.player.seek(cur - PG_SEEK_TIME)
+                        else:
+                            self.player.seek(0)
+            else:
+                self.refresh()
+            #else:
+            #    print self.ch
     # выполняет обновление данных приложения
     def update_data(self):
+        # эквалайзер
+        # прогресс-бар и время
         tm = self.player.time()
         if tm is not None:
             current_time, total_time = tm
             self.trak_duration.set_time(current_time, total_time)
-    
+        
+        # след.трек, т.к. закончился текущий
+        if self.player.is_eos:
+            trak_data = self.trak_list.next_trak()
+            self.player.pause()
+            self.player.add_trak(trak_data['url'])
+            self.player.play()
+            
+            self.system_info.set_status_playning()
+            self.trak_info.set_data(trak_data)
+        #
+        #произошла ошибка, перерисовать все
+        #if self.player.is_error:
+        #    self.refresh()
+
+
     # обновление экрана и всех окон
     def refresh(self):
+        #return
         self.stdscr.refresh()
         self.win.refresh()
         self.system_info.refresh()
@@ -805,17 +877,31 @@ class ClockThread(threading.Thread):
 
     def run(self):
         while True:
-            time.sleep(0.2)
-            self.curses_app.update_data()
-            
+            try:
+                time.sleep(TIME_SLEEP)
+                self.curses_app.update_data()
+            except:
+                pass
 
 
 """ Производит инициализация curses и gstreamer """
 class Application:
     def __init__(self):
         
+        #sys.stderr.close()
+
+        self.vk = None
+        
+        self.vk = vk_api.VkApi(login=login, password=password)
+
+        try:
+            self.vk.authorization()
+        except vk_api.AuthorizationError as error_msg:
+            print "The password/login you entered is incorrect"
+            return
+
         self.play = PlayerApp()
-        self.ca = CursesApplication(self.play)
+        self.ca = CursesApplication(self.play, self.vk)
 
         clock = ClockThread(self.ca)
         clock.start()
@@ -826,6 +912,11 @@ class Application:
 
 
 if __name__ == '__main__':
+    sys.stdout.write('Login: ')
+    login = raw_input()
+
+    password = getpass.getpass()
+
     app = Application()
     app.run()
 
