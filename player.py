@@ -27,7 +27,6 @@ from unidecode import unidecode
 
 locale.setlocale(locale.LC_ALL,"")
 
-
 PG_NAME = "TermVkPlayer"
 PG_VERSION = "v0.01"
 
@@ -92,7 +91,6 @@ class SystemInfoWin(BaseWin):
         self.volume = "%d%%" % int(float(round(volume, 2))*100)
         self.win.addstr(4, 2, self.__tmpl.format('Volume', self.volume), curses.color_pair(6))        
         self.refresh()
-
 
 
 """
@@ -396,12 +394,12 @@ class TrakListWin(BaseWin):
             '18': 'Other',
         }
 
-        tmp_cols = self.cols - 38
-        self.__autor_title_size = tmp_cols/3
-        self.__trak_title_size = tmp_cols - (tmp_cols/3)
+        tmp_cols = self.cols - 33
+        self.__autor_title_size = tmp_cols/3 - 2
+        self.__trak_title_size = tmp_cols - (tmp_cols/3) - 2
 
         #                      ->    id     Title   Author   Genre    Time        
-        self.__format_str = "{0:2} {1:3} {2:%d} {3:%d} {4:18} {5:.8}" % (self.__trak_title_size,
+        self.__format_str = "{0:2} {1:3} {2:%d} {3:%d} {4:18} {5:8}" % (self.__trak_title_size,
             self.__autor_title_size)
 
     def __get_genre_name(self, key):
@@ -427,7 +425,7 @@ class TrakListWin(BaseWin):
             if u'title' in item:
                 if item[u'title'][0] == ' ':
                     item[u'title'] = item[u'title'][1:]
-                item[u'title'] = '- ' +self.__translit(item[u'title']).replace('  ', ' ')[0:self.__trak_title_size-3]
+                item[u'title'] = self.__translit(item[u'title']).replace('  ', ' ')[0:self.__trak_title_size-3]
             else:
                 item[u'title'] = ' '
 
@@ -575,8 +573,6 @@ class TrakListWin(BaseWin):
 """ Реализация плеера """
 class PlayerApp:
     def __init__(self):
-        #import gobject
-        #gobject.threads_init()
 
         gobject.threads_init()
         def start():
@@ -584,10 +580,7 @@ class PlayerApp:
             loop.run()
         thread.start_new_thread(start, ())
 
-        #sys.stdout.close()
-        #sys.stderr.close()
-        #sys.stdin.close()
-
+        #sys.stderr.close()        
 
         self.__file = None
         self.player = gst.element_factory_make("playbin", "player")
@@ -665,9 +658,6 @@ class PlayerApp:
             
             sys.stderr.write("Error: %s  | %s" % (err, debug))
 
-    #bus.connect('message::error', self.process_error)
-
-
     # пеермещщение по записи
     def seek(self, position):
         cur_pos, cur_len = self.time()
@@ -691,14 +681,10 @@ class CursesApplication:
 
         self.stdscr = curses.initscr()
         self.stdscr.clear()
-#        curses.ACS_ULCORNER
+
         curses.cbreak()
         curses.noecho()
         self.stdscr.keypad(0)
-
-        #curses.nocbreak()
-        #curses.echo()
-
 
         #screen.keypad(0);
         curses.curs_set(0)
@@ -763,9 +749,6 @@ class CursesApplication:
         self.is_stop = False
         while self.is_stop is False:
             self.ch = self.stdscr.getch()
-            #time.sleep(0.009)
-            #self.stdscr.getstr()
-#            self.refresh()      
             # Up
             if  self.ch == 259:
                 self.trak_list.move_up()
@@ -914,7 +897,7 @@ class Application:
 if __name__ == '__main__':
     sys.stdout.write('Login: ')
     login = raw_input()
-
+    
     password = getpass.getpass()
 
     app = Application()
