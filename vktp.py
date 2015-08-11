@@ -21,6 +21,7 @@ locale.setlocale(locale.LC_ALL,"")
 
 PG_NAME = "TermVkPlayer"
 PG_VERSION = "v0.01"
+TIME_SLEEP = 0.3
 
 
 """ Инициализация curses, создание окон, запуск плеера в новом потоке и главный цикл приложения """
@@ -92,14 +93,10 @@ class CursesApplication:
         TRAK_ITEM_COLOR = curses.color_pair(2)
         TRACK_SELECT_COLOR = curses.color_pair(3)
 
-#        SELECT_track_PLAY_COLOR = curses.color_pair(1)
-#        track_COLOR = curses.color_pair(2)
-#        SELECT_track_COLOR = curses.color_pair(3)
-        
-
+        COLOR_CONTENT = curses.color_pair(6)
         # создаю окна
-        self.system_info = SystemInfoWin(self.win, 6, self.cols/5, 0, 0)
-        self.track_info = TrackInfoWin(self.win, 6, self.cols/3, 0, self.cols/5)
+        self.system_info = SystemInfoWin(self.win, 6, self.cols/5, 0, 0, PG_NAME, PG_VERSION, COLOR_CONTENT)
+        self.track_info = TrackInfoWin(self.win, 6, self.cols/3, 0, self.cols/5, COLOR_CONTENT)
         #self.ekvalayzer = EkvalayzerWin(self.win, 6, self.cols - self.cols/3 - self.cols/5, 0, self.cols/3 + self.cols/5)
         self.track_duration = ProgressBarWin(self.win, 3, self.cols, 6, 0)
         self.track_list = TrackListWin(self.win, self.rows-9, self.cols - 48, 9, 0,
@@ -147,12 +144,12 @@ class CursesApplication:
                         self.system_info.set_sound_volume(self.player.get_sound_volume())
             # Enter
             elif self.ch == self.KEY_ENTER:#10:
-                track_data = self.track_list.select_track_get_data()
+                track = self.track_list.select_track_get_data()
                 self.player.pause()
-                self.player.add_track(track_data['url'])
+                self.player.add_track(track.get_url())
                 self.player.play()
                 self.system_info.set_status_playning()
-                self.track_info.set_data(track_data)
+                self.track_info.set_data(track)
             # Space
             elif self.ch == self.KEY_SPACE:#32:
                 if self.player.playing == True:
@@ -233,8 +230,11 @@ class ClockThread(threading.Thread):
         self.curses_app = curses_app
 
     def run(self):
+        pass
+        return
         while True:
             try:
+
                 time.sleep(TIME_SLEEP)
                 self.curses_app.update_data()
             except:

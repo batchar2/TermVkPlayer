@@ -35,7 +35,7 @@ class TrackItem:
     
 
 
-    def __init__(self, data, template, position, ptr, title_size, artist_size):
+    def __init__(self, data, template, position, title_size, artist_size):
         if u'genre_id' not in data:
             data[u'genre_id'] = '18'
         
@@ -51,11 +51,13 @@ class TrackItem:
         #else:
         #    data[u'title'] = ' '
 
-        self.__ptr = ptr
+        self.__ptr = '  '
         self.__title = self.__translit(data[u'title'])
         self.__artist = self.__translit(data[u'artist']).replace('  ', ' ')
         self.__genre = self.__get_genre_name(data[u'genre_id'])
         self.__time = self.__get_time(data['duration'])
+
+        self.__url = data[u'url']
 
         self.__title_size = title_size - 3
         self.__artist_size = artist_size - 1
@@ -63,9 +65,12 @@ class TrackItem:
         self.__template = template
 
 
-    def set_ptr(self, ptr):
+    def set_marker(self, marker):
         """ устанавливаю маркер, индикатор, трека """
-        self.ptr = ptr
+        if marker is True:
+            self.__ptr = '->'
+        else:
+            self.__ptr = '  '
 
 
     def __str__(self):
@@ -92,6 +97,16 @@ class TrackItem:
         return unidecode(locallangstring)
 
 
+    def get_url(self):
+        return self.__url
+
+    def get_title(self):
+        return self.__title
+
+    def get_artist(self):
+        return self.__artist
+
+
 
 class TrackItemList:
     """ Хранит список треков. Класс реализует иттератор """
@@ -111,7 +126,7 @@ class TrackItemList:
                 # сохраняю элементы
                 for item in data_list[u'items']:
                     obj = TrackItem(item, template, self.__count_items, 
-                                        '   ', title_size, artist_size)
+                                        title_size, artist_size)
                     self.__track_list.append(obj)
                     self.__count_items += 1
 
@@ -128,8 +143,15 @@ class TrackItemList:
         else:
             self.__current_position += 1
             return self.__track_list[self.__current_position-1]
-            
-                
+    
+    def set_marker(self, index, is_select):
+        self.__track_list[index].set_marker(is_select);
+        pass        
+
+
+    def get(self, index):
+        return self.__track_list[index]
+        
 
 class TrackListWin(BaseWin): 
     """
@@ -175,7 +197,7 @@ class TrackListWin(BaseWin):
         self.__track_size = tmp_cols - (tmp_cols/3) - 3
 
         #                      ->    id     Title   Author   Genre    Time        
-        self.__templ= "{0:2} {1:3} {2:%d} {3:%d} {4:18} {5:8}" % (self.__track_size,
+        self.__templ= "{0:2} {1:3} {2:%d} {3:%d} {4:18} {5:8}  " % (self.__track_size,
             self.__artist_size)
 
         # хранит список треков
@@ -185,30 +207,22 @@ class TrackListWin(BaseWin):
     
     def set_data(self, data_list):
         """  Добавление новых данных в список """
+        self.current_position = 0
+        self.select_positon = -1
+
         if data_list is None:    return
-        if len(data_list['items']) == 0: return
-
-        self.tracks.set_data(data_list, self.__templ, self.__track_size, self.__artist_size)
-
+        
+        if len(data_list['items']) == 0:
+            self.count_data = 0
+        else:
+            self.tracks.set_data(data_list, self.__templ, self.__track_size, self.__artist_size)
+            self.count_data = len(data_list['items'])
 
 
     """ перерисовываю элемент списка """
     def __rewrite_record_list_item(self, obj, color, position):
         self.track_list_pad.addstr(position, 1, str(obj), color)
-        """
-        #     ->      id     Title   Author   Genre    Time 
-        self.track_list_pad.addstr(position, 1, self.__format_str.format(
-                ptr, 
-                str(position+1), 
-                data_item[u'title'],
-                data_item[u'artist'],  
-                self.__get_genre_name(data_item[u'genre_id']),
-                self.__get_time(data_item['duration'])
-            ), 
-            color
-        )
-        """
-        self.track_list_pad.addstr
+        
 
     def show_data(self):
         """ Вывожу все данные  """
@@ -221,22 +235,7 @@ class TrackListWin(BaseWin):
             position += 1
 
         self.refresh()
-        """
-        # "крашу" строку
 
-        self.__ptr = '  '
-        self.__color = track_COLOR
-        if self.count_data == 0:
-            self.__ptr, self.__color = ' ', SELECT_track_COLOR
-
-        self.__rewrite_record_list_item(self.count_data,
-            item, self.__color, self.__ptr)
-        
-        self.count_data += 1
-
-        self.refresh()
-        self.track_list_pad.refresh(self.begin_win, 0, self.x+1, 1, self.rows+7, self.cols)
-        """
     
     """ Перерисовывает список. В зависимости от позиции курсора показывает определенную часть списка """
     def refresh(self):
@@ -260,60 +259,70 @@ class TrackListWin(BaseWin):
         
     """ Перемещение указателя вверх """
     def move_up(self):
+        
         if self.current_position > 0:
-            ## отмечаю проигрываемый трек
+            #self.tracks.set_marker(self.current_position, False)
+            # отмечаю проигрываемый трек
             if self.current_position == self.select_positon:
-                self.__rewrite_record_list_item(self.current_position, 
-                    self.data[self.current_position], SELECT_track_PLAY_COLOR, '->')
+                self.__rewrite_record_list_item(self.tracks.get(self.current_position), 
+                                                    self.color_play, self.current_position)               
             else:
-                self.__rewrite_record_list_item(self.current_position, 
-                    self.data[self.current_position], track_COLOR, '  ')
-
+                self.__rewrite_record_list_item(self.tracks.get(self.current_position), 
+                                                    self.color_item, self.current_position)            
+            
             self.current_position -= 1
             if self.current_position != self.select_positon:
-                self.__rewrite_record_list_item(self.current_position, 
-                    self.data[self.current_position], SELECT_track_COLOR, '  ')
-                
+                #self.tracks.set_marker(self.current_position, True)
+                self.__rewrite_record_list_item(self.tracks.get(self.current_position), 
+                                                    self.color_select, self.current_position)
             self.refresh()
+
 
     """ Перемещение указателя вниз """
     def move_down(self):
+        
         if self.current_position < self.count_data - 1:
+            #self.tracks.set_marker(self.current_position, False)
             # отмечаю проигрываемый трек
             if self.current_position == self.select_positon:
-                self.__rewrite_record_list_item(self.current_position, 
-                    self.data[self.current_position], SELECT_track_PLAY_COLOR, '->')
+                self.__rewrite_record_list_item(self.tracks.get(self.current_position), 
+                                                    self.color_play, self.current_position)               
             else:
-                self.__rewrite_record_list_item(self.current_position, 
-                    self.data[self.current_position], track_COLOR, '  ')
-                    
+                self.__rewrite_record_list_item(self.tracks.get(self.current_position), 
+                                                    self.color_item, self.current_position)            
+            
             self.current_position += 1
             if self.current_position != self.select_positon:
-                self.__rewrite_record_list_item(self.current_position, 
-                    self.data[self.current_position], SELECT_track_COLOR, '  ')
+                #self.tracks.set_marker(self.current_position, False)
+                self.__rewrite_record_list_item(self.tracks.get(self.current_position), 
+                                                    self.color_select, self.current_position)
 
             self.refresh()
-
+        
     """ Возвращает данные о выбранном треке """
     def select_track_get_data(self):
+        
         # "разотмечаю" предыдущую позицию
         if self.select_positon != -1:
-            self.__rewrite_record_list_item(self.select_positon, 
-                    self.data[self.select_positon], track_COLOR, '  ')
-
+            self.tracks.set_marker(self.select_positon, False)
+            self.__rewrite_record_list_item(self.tracks.get(self.select_positon), 
+                                            self.color_item, self.select_positon)
 
         self.select_positon = self.current_position
         # отмечаю новую
-        self.__rewrite_record_list_item(self.select_positon, 
-                self.data[self.select_positon], SELECT_track_PLAY_COLOR, '->')
+        self.tracks.set_marker(self.select_positon, True)
+        self.__rewrite_record_list_item(self.tracks.get(self.select_positon), 
+                                            self.color_play, self.select_positon)
+
 
         self.refresh()
     
-        return self.data[self.select_positon]
-
+        return self.tracks.get(self.select_positon)
+        
 
     """ переключает на след.трек,вызывается автоматически по завершению воспроизведения """
     def next_track(self):
+        """
         if self.select_positon == self.count_data -1:
             self.select_positon = 0
 
@@ -334,4 +343,4 @@ class TrackListWin(BaseWin):
 
 
         return self.data[self.select_positon]
-
+        """

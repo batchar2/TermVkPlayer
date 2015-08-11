@@ -38,8 +38,7 @@ class PlayerApp:
         self.pause()
 
     # добавляю файл на воспроизведение
-    def add_trak(self, url):
-
+    def add_track(self, url):
         self.__file = url
         self.player.set_state(gst.STATE_NULL)
         self.player.set_property('uri', self.__file)
