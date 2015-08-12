@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-
+import sys
+import getpass
 import locale
 import threading
+import time
 
 import curses
 import vk_api
@@ -22,6 +24,7 @@ locale.setlocale(locale.LC_ALL,"")
 PG_NAME = "TermVkPlayer"
 PG_VERSION = "v0.01"
 TIME_SLEEP = 0.3
+PG_SEEK_TIME = 30
 
 
 """ Инициализация curses, создание окон, запуск плеера в новом потоке и главный цикл приложения """
@@ -37,8 +40,7 @@ class CursesApplication:
     KEY_LEFT = 260
 
     def __init__(self, player, vk):
-        #global SELECT_track_PLAY_COLOR, track_COLOR, SELECT_track_COLOR
-
+  
         self.player = player
         self.vk = vk
 
@@ -94,16 +96,25 @@ class CursesApplication:
         TRACK_SELECT_COLOR = curses.color_pair(3)
 
         COLOR_CONTENT = curses.color_pair(6)
+
+        COLOR_PGBAR_PLAYNING = curses.color_pair(4)
+        COLOR_PGBAR_FREE = curses.color_pair(5)
+        
+        TUX_COLOR_BLUE = curses.color_pair(7)
+        TUX_COLOR_YELLOW = curses.color_pair(8)
+        TUX_COLOR_WHILE = curses.color_pair(9)
+
         # создаю окна
         self.system_info = SystemInfoWin(self.win, 6, self.cols/5, 0, 0, PG_NAME, PG_VERSION, COLOR_CONTENT)
         self.track_info = TrackInfoWin(self.win, 6, self.cols/3, 0, self.cols/5, COLOR_CONTENT)
         #self.ekvalayzer = EkvalayzerWin(self.win, 6, self.cols - self.cols/3 - self.cols/5, 0, self.cols/3 + self.cols/5)
-        self.track_duration = ProgressBarWin(self.win, 3, self.cols, 6, 0)
+        self.track_duration = ProgressBarWin(self.win, 3, self.cols, 6, 0, COLOR_PGBAR_PLAYNING, COLOR_PGBAR_FREE)
         self.track_list = TrackListWin(self.win, self.rows-9, self.cols - 48, 9, 0,
                                         TRACK_SELECT_COLOR, TRAK_ITEM_COLOR, TRACK_PLAY_COLOR)
 
         # 48 символа макс. длина. инфа статичная
-        self.navigation = NavigationWin(self.win, self.rows-9, 48, 9, self.cols - 48)
+        self.navigation = NavigationWin(self.win, self.rows-9, 48, 9, self.cols - 48, TUX_COLOR_BLUE,
+                                         TUX_COLOR_YELLOW, TUX_COLOR_WHILE)
 
         self.system_info.set_sound_volume(self.player.get_sound_volume())
 
@@ -112,7 +123,7 @@ class CursesApplication:
     # цикл для curses и по совместительству основной цикл приложения 
     def loop(self):
         # добавляю и вывожу данные
-        self.response = self.vk.method('audio.get', {'count':10})
+        self.response = self.vk.method('audio.get', {'count':50})
         self.track_list.set_data(self.response)
         self.track_list.show_data()
 
@@ -183,26 +194,22 @@ class CursesApplication:
                             self.player.seek(0)
             else:
                 self.refresh()
-            #else:
-            #    print self.ch
     
     # выполняет обновление данных приложения
     def update_data(self):
         # прогресс-бар и время
         tm = self.player.time()
         if tm is not None:
+
             current_time, total_time = tm
             self.track_duration.set_time(current_time, total_time)
-        
         # след.трек, т.к. закончился текущий
         if self.player.is_eos:
-            track_data = self.track_list.next_track()
-            self.player.pause()
-            self.player.add_track(track_data['url'])
+            track = self.track_list.next_track()
+            self.player.add_track(track.get_url())
             self.player.play()
-            
             self.system_info.set_status_playning()
-            self.track_info.set_data(track_data)
+            self.track_info.set_data(track)
         #
         #произошла ошибка, перерисовать все
         #if self.player.is_error:
@@ -230,8 +237,7 @@ class ClockThread(threading.Thread):
         self.curses_app = curses_app
 
     def run(self):
-        pass
-        return
+
         while True:
             try:
 
@@ -266,9 +272,9 @@ class Application:
 
 
 if __name__ == '__main__':
-#    sys.stdout.write('Login: ')
-#    login = raw_input()    
-#    password = getpass.getpass()
+    sys.stdout.write('Login: ')
+    login = raw_input()    
+    password = getpass.getpass()
 
     app = Application()
     app.run()

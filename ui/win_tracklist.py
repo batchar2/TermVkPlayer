@@ -322,25 +322,29 @@ class TrackListWin(BaseWin):
 
     """ переключает на след.трек,вызывается автоматически по завершению воспроизведения """
     def next_track(self):
-        """
+        
+        # затираю старое
+        if self.select_positon != -1:
+            self.tracks.set_marker(self.select_positon, False)
+            self.__rewrite_record_list_item(self.tracks.get(self.select_positon), 
+                                            self.color_item, self.select_positon)
+
+        # переписываю страку выбора, малоли-то
+        self.tracks.set_marker(self.current_position, False)
+        self.__rewrite_record_list_item(self.tracks.get(self.current_position), 
+                                            self.color_select, self.current_position)
+
         if self.select_positon == self.count_data -1:
             self.select_positon = 0
 
-        # затираю старое
-        if self.select_positon != -1:
-            self.__rewrite_record_list_item(self.select_positon, 
-                    self.data[self.select_positon], track_COLOR, '  ')
-
-        # переписываю страку выбора, малоли-то
-        self.__rewrite_record_list_item(self.current_position, 
-                self.data[self.current_position], SELECT_track_COLOR, '  ')
-
         self.select_positon += 1
         # отмечаю новую
-        self.__rewrite_record_list_item(self.select_positon, 
-                self.data[self.select_positon], SELECT_track_PLAY_COLOR, '->')
+        self.tracks.set_marker(self.select_positon, True)
+        self.__rewrite_record_list_item(self.tracks.get(self.select_positon), 
+                                            self.color_play, self.select_positon)
+
         self.refresh()
 
 
-        return self.data[self.select_positon]
-        """
+        return self.tracks.get(self.select_positon)
+        

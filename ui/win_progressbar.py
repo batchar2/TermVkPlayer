@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from win_base import BaseWin
-
+import time
 """
 Отдельное окно с информацией и времени и шкалой прогресса воспроизведения
 """
 class ProgressBarWin(BaseWin):
-    def __init__(self, parent_win, rows, cols, x, y):
+    def __init__(self, parent_win, rows, cols, x, y, color_playning, color_free):
         super(ProgressBarWin, self).__init__(parent_win, rows, cols, x, y)
         self.__size_bar = self.cols - 3
+        self.color_playning = color_playning
+        self.color_free = color_free
 
     def __get_time(self, current_time, total_time):
         current = time.strftime("%H:%M:%S", time.gmtime(current_time))
@@ -31,8 +33,8 @@ class ProgressBarWin(BaseWin):
             i = 0
             for c in self.__progres_bar:
                 if index >= i:
-                    self.win.addstr(1, i+1, c, curses.color_pair(4))
+                    self.win.addstr(1, i+1, c, self.color_playning)
                 else: 
-                    self.win.addstr(1, i+1, c, curses.color_pair(5))
+                    self.win.addstr(1, i+1, c, self.color_free)
                 i += 1
             self.refresh()
