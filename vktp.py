@@ -16,6 +16,7 @@ from ui.win_progressbar import ProgressBarWin
 from ui.win_sysinfo import SystemInfoWin
 from ui.win_trackinfo import TrackInfoWin
 from ui.win_tracklist import TrackListWin
+from ui.win_alboms import AlbomsWin
 # импорт "плеера"
 from player.gst_player import PlayerApp
 
@@ -25,6 +26,8 @@ PG_NAME = "TermVkPlayer"
 PG_VERSION = "v0.01"
 TIME_SLEEP = 0.3
 PG_SEEK_TIME = 30
+
+login, password = 'skokov1992@mail.ru', 'putinvvico'
 
 
 """ Инициализация curses, создание окон, запуск плеера в новом потоке и главный цикл приложения """
@@ -84,6 +87,9 @@ class CursesApplication:
         curses.init_pair(14, curses.COLOR_GREEN, curses.COLOR_GREEN)
         curses.init_pair(15, curses.COLOR_RED, curses.COLOR_RED)
 
+
+        #curses.slk_set(1, "Test1", 1)
+        #curses.slk_set(2, "Test2", 1)
         # получаю размеры экрана и оговариваю работу с клавиатурой
         self.stdscr.keypad(1)
         self.rows, self.cols = self.stdscr.getmaxyx()
@@ -113,8 +119,12 @@ class CursesApplication:
                                         TRACK_SELECT_COLOR, TRAK_ITEM_COLOR, TRACK_PLAY_COLOR)
 
         # 48 символа макс. длина. инфа статичная
-        self.navigation = NavigationWin(self.win, self.rows-9, 48, 9, self.cols - 48, TUX_COLOR_BLUE,
-                                         TUX_COLOR_YELLOW, TUX_COLOR_WHILE)
+        #self.navigation = NavigationWin(self.win, self.rows-9, 48, 9, self.cols - 48, TUX_COLOR_BLUE,
+        #                                 TUX_COLOR_YELLOW, TUX_COLOR_WHILE)
+
+        self.alboms_win = AlbomsWin(self.win, self.rows-9, 48, 9, self.cols - 48,
+                                        TRACK_SELECT_COLOR, TRAK_ITEM_COLOR, TRACK_PLAY_COLOR)
+
 
         self.system_info.set_sound_volume(self.player.get_sound_volume())
 
@@ -123,9 +133,14 @@ class CursesApplication:
     # цикл для curses и по совместительству основной цикл приложения 
     def loop(self):
         # добавляю и вывожу данные
-        self.response = self.vk.method('audio.get', {'count':50})
-        self.track_list.set_data(self.response)
-        self.track_list.show_data()
+        #self.all_traks = self.vk.method('audio.get', {'count':2000})
+        #self.track_list.set_data(self.all_traks)
+        #self.track_list.show_data()
+
+        self.all_alboms = self.vk.method('audio.getAlbums', {'count':100})
+        self.alboms_win.set_data(self.all_alboms)
+        self.alboms_win.show_data()
+        
 
         self.is_stop = False
         
@@ -225,7 +240,7 @@ class CursesApplication:
         self.track_info.refresh()
         self.track_duration.refresh()
         self.track_list.refresh()
-        self.navigation.refresh()
+#        self.navigation.refresh()
 
 
 
@@ -272,9 +287,9 @@ class Application:
 
 
 if __name__ == '__main__':
-    sys.stdout.write('Login: ')
-    login = raw_input()    
-    password = getpass.getpass()
+#    sys.stdout.write('Login: ')
+#    login = raw_input()    
+#    password = getpass.getpass()
 
     app = Application()
     app.run()
