@@ -27,8 +27,12 @@ PG_VERSION = "v0.01"
 TIME_SLEEP = 0.3
 PG_SEEK_TIME = 30
 
-login, password = 'skokov1992@mail.ru', 'putinvvico'
 
+
+
+class CursesParam(object):
+    def __init__(self):
+        pass
 
 """ Инициализация curses, создание окон, запуск плеера в новом потоке и главный цикл приложения """
 class CursesApplication:
@@ -43,7 +47,10 @@ class CursesApplication:
     KEY_LEFT = 260
 
     def __init__(self, player, vk):
-  
+        # выбрана левая панель с треками
+        self.is_select_trak_list = False 
+        # отображать список альбомов
+        self.is_view_albom_list = True 
         self.player = player
         self.vk = vk
 
@@ -105,7 +112,7 @@ class CursesApplication:
 
         COLOR_PGBAR_PLAYNING = curses.color_pair(4)
         COLOR_PGBAR_FREE = curses.color_pair(5)
-        
+
         TUX_COLOR_BLUE = curses.color_pair(7)
         TUX_COLOR_YELLOW = curses.color_pair(8)
         TUX_COLOR_WHILE = curses.color_pair(9)
@@ -122,7 +129,7 @@ class CursesApplication:
         #self.navigation = NavigationWin(self.win, self.rows-9, 48, 9, self.cols - 48, TUX_COLOR_BLUE,
         #                                 TUX_COLOR_YELLOW, TUX_COLOR_WHILE)
 
-        self.alboms_win = AlbomsWin(self.win, self.rows-9, 48, 9, self.cols - 48,
+        self.alboms_win = AlbomsWin(self.win, self.rows-9, 48, 9, self.cols - 48, self.cols,
                                         TRACK_SELECT_COLOR, TRAK_ITEM_COLOR, TRACK_PLAY_COLOR)
 
 
@@ -133,9 +140,9 @@ class CursesApplication:
     # цикл для curses и по совместительству основной цикл приложения 
     def loop(self):
         # добавляю и вывожу данные
-        #self.all_traks = self.vk.method('audio.get', {'count':2000})
-        #self.track_list.set_data(self.all_traks)
-        #self.track_list.show_data()
+        self.all_traks = self.vk.method('audio.get', {'count':2000})
+        self.track_list.set_data(self.all_traks)
+        self.track_list.show_data()
 
         self.all_alboms = self.vk.method('audio.getAlbums', {'count':100})
         self.alboms_win.set_data(self.all_alboms)
@@ -148,10 +155,16 @@ class CursesApplication:
             self.ch = self.stdscr.getch()
             # Up
             if  self.ch == self.KEY_UP:#259:
-                self.track_list.move_up()
+                if self.is_select_trak_list is True:
+                    self.track_list.move_up()
+                else:
+                    self.alboms_win.move_up()
             # Down
             elif self.ch == self.KEY_DOWN:#258:
-                self.track_list.move_down()
+                if self.is_select_trak_list is True:
+                    self.track_list.move_down()
+                else:
+                    self.alboms_win.move_down()
             # Left  ----
             elif self.ch == self.KEY_LEFT:#260:
                 sound_vol = float(self.player.get_sound_volume())
@@ -170,12 +183,27 @@ class CursesApplication:
                         self.system_info.set_sound_volume(self.player.get_sound_volume())
             # Enter
             elif self.ch == self.KEY_ENTER:#10:
-                track = self.track_list.select_track_get_data()
-                self.player.pause()
-                self.player.add_track(track.get_url())
-                self.player.play()
-                self.system_info.set_status_playning()
-                self.track_info.set_data(track)
+                if self.is_select_trak_list is True:
+                    track = self.track_list.select_track_get_data()
+                    self.player.pause()
+                    self.player.add_track(track.get_url())
+                    self.player.play()
+                    self.system_info.set_status_playning()
+                    self.track_info.set_data(track)
+
+                    
+                else:
+                    albom = self.alboms_win.select_albom_get_data()
+                    
+                    # отображаю все песни
+                    albom_id = albom.get_id()
+                    if albom_id is not None:
+                        self.all_traks = self.vk.method('audio.get', {'count':2000, 'album_id': albom_id})
+                    else:
+                        self.all_traks = self.vk.method('audio.get', {'count':2000})
+                    self.track_list.set_data(self.all_traks)
+                    self.track_list.show_data()
+                    self.track_list.hide_cursor()
             # Space
             elif self.ch == self.KEY_SPACE:#32:
                 if self.player.playing == True:
@@ -207,8 +235,21 @@ class CursesApplication:
                             self.player.seek(cur - PG_SEEK_TIME)
                         else:
                             self.player.seek(0)
+            # TAB
+            elif self.ch == 9:
+                if self.is_select_trak_list is True:
+                    self.track_list.hide_cursor()
+                    self.alboms_win.show_cursor()
+                else:
+                    self.track_list.show_cursor()
+                    self.alboms_win.hide_cursor()
+
+                self.is_select_trak_list = not self.is_select_trak_list
+                #print '!!!!!!!!!!!!!!'
             else:
-                self.refresh()
+                pass
+                #print self.ch
+                #self.refresh()
     
     # выполняет обновление данных приложения
     def update_data(self):

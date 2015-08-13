@@ -171,6 +171,8 @@ class TrackListWin(BaseWin):
 
         self.win_set_title("track list")
 
+        self.tracks = None
+        
         self.color_select = color_select
         self.color_item = color_item
         self.color_play = color_play
@@ -201,22 +203,36 @@ class TrackListWin(BaseWin):
             self.__artist_size)
 
         # хранит список треков
-        self.tracks = TrackItemList()
+       
 
 
     
     def set_data(self, data_list):
+        if self.count_data != 0:
+            self.clear_win()
+        
+        self.data = []
+        self.begin_win = 0
+        self.track_list_pad.clrtobot()
         """  Добавление новых данных в список """
         self.current_position = 0
         self.select_positon = -1
+        self.count_data = 0
 
         if data_list is None:    return
         
         if len(data_list['items']) == 0:
             self.count_data = 0
         else:
+            self.tracks = TrackItemList()
             self.tracks.set_data(data_list, self.__templ, self.__track_size, self.__artist_size)
             self.count_data = len(data_list['items'])
+
+    def clear_win(self):
+        for i  in range(self.count_data):
+            s = self.__templ.format("  ", "  ", "  ", "  ", "  ", "  ")
+            self.__rewrite_record_list_item(s, self.color_item, i)
+            
 
 
     """ перерисовываю элемент списка """
@@ -227,12 +243,13 @@ class TrackListWin(BaseWin):
     def show_data(self):
         """ Вывожу все данные  """
         position = 0
-        for obj in self.tracks:
-            if position == 0:
-                self.__rewrite_record_list_item(obj, self.color_select, position)
-            else:
-                self.__rewrite_record_list_item(obj, self.color_item, position)
-            position += 1
+        if self.tracks is not None:
+            for obj in self.tracks:
+                if position == 0:
+                    self.__rewrite_record_list_item(obj, self.color_select, position)
+                else:
+                    self.__rewrite_record_list_item(obj, self.color_item, position)
+                position += 1
 
         self.refresh()
 
@@ -348,3 +365,23 @@ class TrackListWin(BaseWin):
 
         return self.tracks.get(self.select_positon)
         
+    def hide_cursor(self):
+        if self.tracks is None: return
+        if self.current_position != -1:
+            self.__rewrite_record_list_item(self.tracks.get(self.current_position), 
+                                            self.color_item, self.current_position)
+        if self.select_positon != -1:
+            self.__rewrite_record_list_item(self.tracks.get(self.select_positon), 
+                                            self.color_item, self.select_positon)
+        self.refresh()
+        
+
+    def show_cursor(self):
+        if self.tracks is None: return
+        if self.current_position != -1:
+            self.__rewrite_record_list_item(self.tracks.get(self.current_position), 
+                                            self.color_select, self.current_position)
+        if self.select_positon != -1:
+            self.__rewrite_record_list_item(self.tracks.get(self.select_positon), 
+                                            self.color_play, self.select_positon)
+        self.refresh()
