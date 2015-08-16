@@ -16,8 +16,8 @@ class TrackInfoWin(BaseWin):
         self.refresh()
 
     def set_data(self, trak):
-        self.win.addstr(2, 2, self.__tmpl.format('Title:', trak.get_title()), self.color_content)
-        self.win.addstr(3, 2, self.__tmpl.format('Artist:', trak.get_artist()), self.color_content)
+        self.win.addstr(2, 2, self.__tmpl.format('Title:', trak.title), self.color_content)
+        self.win.addstr(3, 2, self.__tmpl.format('Artist:', trak.artist), self.color_content)
         self.win.addstr(4, 2, self.__tmpl.format('Albom:', "  "), self.color_content)
         self.refresh()
 

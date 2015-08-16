@@ -6,9 +6,6 @@ import threading
 import time
 
 import curses
-import vk_api
-
-
 
 # импорт ui
 from ui.win_navigation import NavigationWin
@@ -20,6 +17,9 @@ from ui.win_alboms import AlbomsWin
 # импорт "плеера"
 from player.gst_player import PlayerApp
 
+
+from storage.storage import Storage 
+
 locale.setlocale(locale.LC_ALL,"")
 
 PG_NAME = "TermVkPlayer"
@@ -30,12 +30,9 @@ PG_SEEK_TIME = 30
 
 
 
-class CursesParam(object):
-    def __init__(self):
-        pass
 
 """ Инициализация curses, создание окон, запуск плеера в новом потоке и главный цикл приложения """
-class CursesApplication:
+class CursesApplication(object):
     KEY_ENTER = 10
     KEY_SPACE = 32
     KEY_d, KEY_D = 100, 68
@@ -47,12 +44,7 @@ class CursesApplication:
     KEY_LEFT = 260
 
     def __init__(self, player, vk):
-        # выбрана левая панель с треками
-        self.is_select_trak_list = False 
-        # отображать список альбомов
-        self.is_view_albom_list = True 
-        self.player = player
-        self.vk = vk
+        global PG_NAME, PG_VERSION
 
         self.stdscr = curses.initscr()
         self.stdscr.clear()
@@ -94,9 +86,6 @@ class CursesApplication:
         curses.init_pair(14, curses.COLOR_GREEN, curses.COLOR_GREEN)
         curses.init_pair(15, curses.COLOR_RED, curses.COLOR_RED)
 
-
-        #curses.slk_set(1, "Test1", 1)
-        #curses.slk_set(2, "Test2", 1)
         # получаю размеры экрана и оговариваю работу с клавиатурой
         self.stdscr.keypad(1)
         self.rows, self.cols = self.stdscr.getmaxyx()
@@ -117,11 +106,20 @@ class CursesApplication:
         TUX_COLOR_YELLOW = curses.color_pair(8)
         TUX_COLOR_WHILE = curses.color_pair(9)
 
+        # выбрана левая панель с треками
+        self.is_select_trak_list = True 
+        # отображать список альбомов
+        self.is_view_albom_list = False
+        self.player = player
+        self.vk = vk
+
         # создаю окна
-        self.system_info = SystemInfoWin(self.win, 6, self.cols/5, 0, 0, PG_NAME, PG_VERSION, COLOR_CONTENT)
+        self.system_info = SystemInfoWin(self.win, 6, self.cols/5, 0, 0, 
+                                            PG_NAME, PG_VERSION, COLOR_CONTENT)
         self.track_info = TrackInfoWin(self.win, 6, self.cols/3, 0, self.cols/5, COLOR_CONTENT)
         #self.ekvalayzer = EkvalayzerWin(self.win, 6, self.cols - self.cols/3 - self.cols/5, 0, self.cols/3 + self.cols/5)
         self.track_duration = ProgressBarWin(self.win, 3, self.cols, 6, 0, COLOR_PGBAR_PLAYNING, COLOR_PGBAR_FREE)
+        
         self.track_list = TrackListWin(self.win, self.rows-9, self.cols - 48, 9, 0,
                                         TRACK_SELECT_COLOR, TRAK_ITEM_COLOR, TRACK_PLAY_COLOR)
 
@@ -140,15 +138,15 @@ class CursesApplication:
     # цикл для curses и по совместительству основной цикл приложения 
     def loop(self):
         # добавляю и вывожу данные
-        self.all_traks = self.vk.method('audio.get', {'count':2000})
-        self.track_list.set_data(self.all_traks)
-        self.track_list.show_data()
+        self.vk.load_traks()
+        self.vk.load_alboms()
 
-        self.all_alboms = self.vk.method('audio.getAlbums', {'count':100})
-        self.alboms_win.set_data(self.all_alboms)
-        self.alboms_win.show_data()
+        self.track_list.set_data(self.vk.tracks)
+        self.track_list.show()
+
+        self.alboms_win.set_data(self.vk.alboms)
+        self.alboms_win.show()
         
-
         self.is_stop = False
         
         while self.is_stop is False:
@@ -184,25 +182,37 @@ class CursesApplication:
             # Enter
             elif self.ch == self.KEY_ENTER:#10:
                 if self.is_select_trak_list is True:
-                    track = self.track_list.select_track_get_data()
+                    track = self.track_list.get_select_data()
                     self.player.pause()
-                    self.player.add_track(track.get_url())
+                    self.player.add_track(track.url)
                     self.player.play()
                     self.system_info.set_status_playning()
                     self.track_info.set_data(track)
-
-                    
                 else:
-                    albom = self.alboms_win.select_albom_get_data()
+                    albom = self.alboms_win.get_select_data()
                     
+                    self.vk.load_traks()
+       
+
+        #self.vk.load_alboms()
+        #
+        #self.track_list.set_data(self.vk.tracks)
+        #self.track_list.show()
+        #
+        #self.alboms_win.set_data(self.vk.alboms)
+        #self.alboms_win.show()
+        
+
                     # отображаю все песни
-                    albom_id = albom.get_id()
-                    if albom_id is not None:
-                        self.all_traks = self.vk.method('audio.get', {'count':2000, 'album_id': albom_id})
+                    if albom.id is not None:
+                        self.vk.load_traks(albom.id)
+                        #self.all_traks = self.vk.method('audio.get', {'count':2000, 'album_id': albom_id})
                     else:
-                        self.all_traks = self.vk.method('audio.get', {'count':2000})
-                    self.track_list.set_data(self.all_traks)
-                    self.track_list.show_data()
+                        self.vk.load_traks()
+                        #self.all_traks = self.vk.method('audio.get', {'count':2000})
+
+                    self.track_list.set_data(self.vk.tracks)
+                    self.track_list.show()
                     self.track_list.hide_cursor()
             # Space
             elif self.ch == self.KEY_SPACE:#32:
@@ -262,7 +272,7 @@ class CursesApplication:
         # след.трек, т.к. закончился текущий
         if self.player.is_eos:
             track = self.track_list.next_track()
-            self.player.add_track(track.get_url())
+            self.player.add_track(track.url)
             self.player.play()
             self.system_info.set_status_playning()
             self.track_info.set_data(track)
@@ -281,12 +291,18 @@ class CursesApplication:
         self.track_info.refresh()
         self.track_duration.refresh()
         self.track_list.refresh()
+
+
 #        self.navigation.refresh()
 
 
 
-""" выполняет обновления прогресс-бара """
 class ClockThread(threading.Thread):
+    """ 
+    Выполняет обновления прогресс-бара. Костыль возник из-за бага, 
+    когда приложение с ncurses не может обрабатывать сигналы 
+    """
+
     def __init__(self, curses_app):
         threading.Thread.__init__(self)
         self.daemon = True
@@ -307,18 +323,18 @@ class ClockThread(threading.Thread):
 class Application:
     def __init__(self):
 
-        self.vk = vk_api.VkApi(login=login, password=password)
+        # получаю доступ к вк
+        vk = Storage(login, password, 'VK').get()
 
-        try:
-            self.vk.authorization()
-        except vk_api.AuthorizationError as error_msg:
-            print "The password/login you entered is incorrect"
-            return
+        r, msg = vk.login()
+        if r is False:
+            print msg
+            sys.exit(1)
 
         # устанавливаю плеер, запускается в отдельном потоке
         self.play = PlayerApp()
         # стартую ui
-        self.ca = CursesApplication(self.play, self.vk)
+        self.ca = CursesApplication(self.play, vk)
         # стартую отдельный поток, для генерации событий, т.к. не работают с ncurses сигналы. ХЗ почему. Странно очень
         clock = ClockThread(self.ca)
         clock.start()
@@ -328,9 +344,9 @@ class Application:
 
 
 if __name__ == '__main__':
-#    sys.stdout.write('Login: ')
-#    login = raw_input()    
-#    password = getpass.getpass()
+    sys.stdout.write('Login: ')
+    login = raw_input()    
+    password = getpass.getpass()
 
     app = Application()
     app.run()
