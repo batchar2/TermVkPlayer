@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 
-""" Базовый клас для окон """
-__metaclass__ = type
+from abc import ABCMeta, abstractmethod, abstractproperty
 
-class BaseWin:
+#""" Базовый клас для окон """
+#__metaclass__ = type
+
+class BaseWin(object):
+    """ Базовый абстрактный класс для окон """
+    #__metaclass__ = ABCMeta
+
     def __init__(self, parent_win, rows, cols, x, y, color_header=None):
         self.parent_win = parent_win
         self.rows, self.cols, self.x, self.y = rows, cols, x, y 
         self.win = self.parent_win.subwin(rows, cols, x, y)
         self.color_header = color_header
 
-        #curses.wattron()
         self.win.box()
 
     def refresh(self):
@@ -18,7 +22,6 @@ class BaseWin:
             self.win.refresh()
 
     def win_set_title(self, title):
-        pass
         self.win.addstr(0, 2, "|%s|" % title)
         # !!!!!!!!!!
         #self.win.addstr(0, 2, "|%s|" % title, curses.color_pair(6)) 
