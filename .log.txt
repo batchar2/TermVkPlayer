@@ -1,0 +1,3 @@
+Error: Ресурс не найден.  | gstplaybasebin.c(1655): gen_source_element (): /GstPlayBin:player/home/bat/Apps/vk/player/player.py/ui/win_alboms.py:27: RuntimeWarning: Argument <type 'str'> is not an unicode object. Passing an encoded string will likely have unexpected results.
+  return unidecode(s)
+True

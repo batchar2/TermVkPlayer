@@ -11,16 +11,15 @@ class AlbomItem:
     """ Хранит информацию о единственном треке """
     
     def __init__(self, data, size):
-        
-
         self.__title = self.__translit(data['title'])
         self.__id = data['id']
         self.__template = '{1:>%d}' % (size-10)
     
         #print self.__title
+        self.__ptr = '  ';
 
     def __str__(self):
-        return self.__title
+        return "%s %s" % (self.__ptr, self.__title)
         #return self.__template.format(self.__title)
 
 
@@ -37,6 +36,18 @@ class AlbomItem:
     def title(self):
         return self.__title
 
+    @property
+    def marker(self):
+        return self.__ptr
+
+    #@marker.setter
+    def marker_set(self, value):
+        #print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
+        """ устанавливаю маркер, индикатор, трека """
+        if value is True:
+            self.__ptr = '->'
+        else:
+            self.__ptr = '  '
 
 
 class AlbomItemList:
@@ -66,7 +77,6 @@ class AlbomItemList:
         """ сам себе итератор """
         return self
 
-
     def next(self):
         """ реализую итератор.  """
         if self.__count_items == 0 or self.__current_position >= self.__count_items:
@@ -79,9 +89,10 @@ class AlbomItemList:
         return self.__albom_list[index]
 
     def set_marker(self, index, is_select):
+        #print '%%%%%%%%%%%%%%%%%%%%%%5'
         #тут нужно поминять цвет
-        pass
-        #self.__data[index].marker = is_select;
+        #self.__albom_list[index].marker = is_select;
+        self.__albom_list[index].marker_set(is_select)
 
 
 class AlbomsWin(BaseListWin):
@@ -91,7 +102,7 @@ class AlbomsWin(BaseListWin):
         
         super(AlbomsWin, self).__init__(parent_win, rows, cols, x, y, 
                                             color_select, color_item, color_play)
-        self.win_set_title("Alboms")
+        self.win_set_title("Albums")
         self.__templ = "{0:%d}" % (cols-3)
         self.refresh()
 

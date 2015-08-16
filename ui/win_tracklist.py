@@ -56,8 +56,8 @@ class TrackItem:
     def marker(self):
         return self.__ptr
         
-    @marker.setter
-    def marker(self, value):
+    #@marker.setter
+    def marker_set(self, value):
         """ устанавливаю маркер, индикатор, трека """
         if value is True:
             self.__ptr = '->'
@@ -104,7 +104,8 @@ class TrackItemList:
 
     def set_marker(self, index, is_select):
         """ Установка "марккера", т.е. вот такой стрелочки "->", указывает на проигрываемый трек  """
-        self.__data[index].marker = is_select;
+        self.__data[index].marker_set(is_select)
+        #self.__data[index].marker = is_select;
 
 
     def get(self, index):

@@ -49,6 +49,9 @@ class VkStorage(BaseStorage):
         except vk_api.AuthorizationError as error_msg:
             self.__vk = None
             return False, "The password/login you entered is incorrect"
+        except vk.ConnectionError as error_msg:
+            self.__vk = None
+            return False, 'Connection aborted'
         
         return True, "Ok"
 

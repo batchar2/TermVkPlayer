@@ -58,7 +58,6 @@ class BaseListWin(BaseWin):
                     # подсвечиваю трек как обычный
                     self.__rewrite_record_list_item(obj, self.__color_item, position)
                 position += 1
-
         self.refresh()
 
 
@@ -80,8 +79,6 @@ class BaseListWin(BaseWin):
             else:
                 self._begin_win -= (self._list_size/2)
                 self._end_win -= (self._list_size/2)
-   
-
         self.__list_pad.refresh(self._begin_win, 0, self.x+1, self.y+1, self.rows+7, self.y+self.cols)
 
 
@@ -93,7 +90,7 @@ class BaseListWin(BaseWin):
                                             self.__color_item, self._current_position)
         if self._select_positon != -1:
             self.__rewrite_record_list_item(self._data.get(self._select_positon), 
-                                            self.__color_item, self._select_positon)
+                                            self.__color_play, self._select_positon)
         self.refresh()
         
 
@@ -116,11 +113,10 @@ class BaseListWin(BaseWin):
             # отмечаю выделенный элемент
             if self._current_position == self._select_positon:
                 self.__rewrite_record_list_item(self._data.get(self._current_position), 
-                                                    self.__color_play, self._current_position)               
+                                                    self.__color_play, self._current_position)
             else:
                 self.__rewrite_record_list_item(self._data.get(self._current_position), 
-                                                    self.__color_item, self._current_position)            
-            
+                                                    self.__color_item, self._current_position)
             self._current_position -= 1
             if self._current_position != self._select_positon:
                 #self._data.set_marker(self.current_position, True)
@@ -136,7 +132,7 @@ class BaseListWin(BaseWin):
             # отмечаю проигрываемый трек
             if self._current_position == self._select_positon:
                 self.__rewrite_record_list_item(self._data.get(self._current_position), 
-                                                    self.__color_play, self._current_position)               
+                                                    self.__color_play, self._current_position)
             else:
                 self.__rewrite_record_list_item(self._data.get(self._current_position), 
                                                     self.__color_item, self._current_position)            
@@ -160,9 +156,9 @@ class BaseListWin(BaseWin):
         self._select_positon = self._current_position
         # отмечаю новую
         self._data.set_marker(self._select_positon, True)
+
         self.__rewrite_record_list_item(self._data.get(self._select_positon), 
                                             self.__color_play, self._select_positon)
         self.refresh()
     
         return self._data.get(self._select_positon)
-        

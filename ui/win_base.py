@@ -26,3 +26,10 @@ class BaseWin(object):
         # !!!!!!!!!!
         #self.win.addstr(0, 2, "|%s|" % title, curses.color_pair(6)) 
 
+    #def hide(self):
+    #    self.win.hide()
+
+    #def show(self):
+    #    self.win.show()
+    #    self.refresh()
+

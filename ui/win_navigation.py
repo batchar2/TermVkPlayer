@@ -125,4 +125,4 @@ class NavigationWin(BaseWin):
         self.win.addstr(34, 19, "-- '' -'-' ", self.color_blue)
         self.win.addstr(34, 32, "`':_::::'`", self.color_yellow)
         
-        self.refresh()
+        #self.refresh()
