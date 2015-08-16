@@ -10,4 +10,9 @@ sudo pip install vk_api
 Устновите пакет gstreamer-0.10
 
 ## Примеры работы:
-![alt tag](https://pp.vk.me/c621428/v621428865/d840/LtmWFykovi0.jpg)
+
+![alt tag](https://pp.vk.me/c627624/v627624865/f16c/95ddHF3tdZQ.jpg)
+
+![alt tag](https://pp.vk.me/c627624/v627624865/f162/KNnx-3nvzWE.jpg)
+
+
