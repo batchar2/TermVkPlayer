@@ -104,7 +104,7 @@ class AlbomsWin(BaseListWin):
                                             color_select, color_item, color_play)
         self.win_set_title("Albums")
         self.__templ = "{0:%d}" % (cols-3)
-        self.refresh()
+        #self.refresh()
 
 
     def set_data(self, data_list):

@@ -99,7 +99,7 @@ class PlayerApp:
     def seek(self, position):
         cur_pos, cur_len = self.time()
         if position > cur_len:
-            self.stop()
+            #self.stop()
             return
 
         fmt = gst.Format(gst.FORMAT_TIME)

@@ -162,3 +162,25 @@ class BaseListWin(BaseWin):
         self.refresh()
     
         return self._data.get(self._select_positon)
+
+    def get_next(self):
+        """ Возвращает данные о следующем объекте и подсвечивает его """        
+        # "разотмечаю" предыдущую позицию
+        if self._select_positon != -1:
+            self._data.set_marker(self._select_positon, False)
+            self.__rewrite_record_list_item(self._data.get(self._select_positon), 
+                                            self.__color_item, self._select_positon)
+
+        if self._select_positon < self._count_data - 2:
+            self._select_positon += 1
+        else:
+            self._select_positon = 0
+
+        # отмечаю новую
+        self._data.set_marker(self._select_positon, True)
+
+        self.__rewrite_record_list_item(self._data.get(self._select_positon), 
+                                            self.__color_play, self._select_positon)
+        self.refresh()
+    
+        return self._data.get(self._select_positon)

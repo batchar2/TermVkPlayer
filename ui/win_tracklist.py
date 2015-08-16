@@ -163,3 +163,7 @@ class TrackListWin(BaseListWin):
         if len(data_list) != 0:
             self._data = TrackItemList()
             self._data.set_data(data_list, self._templ, self._track_size, self._artist_size)
+
+
+    def next_track(self):
+        return self.get_next()

@@ -182,13 +182,13 @@ class CursesApplication(object):
             if  self.ch == self.KEY_UP:#259:
                 if self.is_select_trak_list is True:
                     self.track_list.move_up()
-                else:
+                elif self.is_view_albom_list is True:
                     self.alboms_win.move_up()
             # Down
             elif self.ch == self.KEY_DOWN:#258:
                 if self.is_select_trak_list is True:
                     self.track_list.move_down()
-                else:
+                elif self.is_view_albom_list is True:
                     self.alboms_win.move_down()
             # Left  ----
             elif self.ch == self.KEY_LEFT:#260:
@@ -215,7 +215,7 @@ class CursesApplication(object):
                     self.player.play()
                     self.system_info.set_status_playning()
                     self.track_info.set_data(track)
-                else:
+                elif self.is_view_albom_list is True:
                     albom = self.alboms_win.get_select_data()
                     
                     self.vk.load_traks()
@@ -266,6 +266,8 @@ class CursesApplication(object):
                         self.player.play()
             # TAB
             elif self.ch == 9:
+                # при выборе "пингвина" TAB не будет работать
+                #if self.is_view_albom_list is False:
                 if self.is_select_trak_list is True:
                     self.track_list.hide_cursor()
                     self.alboms_win.show_cursor()
@@ -278,10 +280,22 @@ class CursesApplication(object):
             elif self.ch == self.KEY_F1:
                 if self.is_view_albom_list is True:
                     self.is_view_albom_list = False
+                    self.is_select_trak_list = False        
                 else:
                     self.is_view_albom_list = True
+
+                self.is_select_trak_list = True
                 self.refresh()
             else:
+                """
+                track = self.track_list.next_track()
+                self.player.add_track(track.url)
+                self.player.play()
+                self.system_info.set_status_playning()
+                self.track_info.set_data(track)
+                """
+            #
+                
                 pass
                 #print self.ch
                 #self.refresh()
@@ -301,17 +315,14 @@ class CursesApplication(object):
             self.player.play()
             self.system_info.set_status_playning()
             self.track_info.set_data(track)
-        #
-        #произошла ошибка, перерисовать все
-        #if self.player.is_error:
-        #    self.refresh()
-
+        
 
     # обновление экрана и всех окон
     def refresh(self):
         #return
         self.stdscr.refresh()
         self.win.refresh()
+        
         self.system_info.refresh()
         self.track_info.refresh()
         self.track_duration.refresh()
@@ -327,10 +338,12 @@ class CursesApplication(object):
         self.__random_f7.refresh()
         self.__move_exit.refresh()
 
-        if self.is_view_albom_list is False:
-            self.navigation.refresh()
-        else:
+        if self.is_view_albom_list is True:
+            #pass
             self.alboms_win.refresh()
+        else:
+            self.navigation.refresh()
+            
 
 
 class ClockThread(threading.Thread):
