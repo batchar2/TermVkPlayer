@@ -34,16 +34,24 @@ PG_SEEK_TIME = 30
 
 """ Инициализация curses, создание окон, запуск плеера в новом потоке и главный цикл приложения """
 class CursesApplication(object):
-    KEY_ENTER = 10
-    KEY_SPACE = 32
-    KEY_d, KEY_D = 100, 68
-    KEY_q, KEY_Q = 113, 81
-    KEY_a, KEY_A = 97, 65
-    KEY_UP = 259
-    KEY_DOWN = 258 
-    KEY_RIGHT = 261
-    KEY_LEFT = 260
-    KEY_F1 = 265
+    
+    keys_cmd = [
+        {"key_number" : 9, "cmd_name": "key_tab", "title": "KEY_TAB"},
+        {"key_number" : 10, "cmd_name": "enter", "title": "KEY_ENTER"},
+        {"key_number" : 32, "cmd_name": "space", "title": "KEY_SPACE"},
+        {"key_number" : 100, "cmd_name": "key_d", "title": "KEY_d"},
+        {"key_number" : 68, "cmd_name": "key_d", "title": "KEY_D"},
+        {"key_number" : 113, "cmd_name": "key_q", "title": "KEY_q"},
+        {"key_number" : 68, "cmd_name": "key_q", "title": "KEY_Q"},
+        {"key_number" : 97, "cmd_name": "key_a", "title": "KEY_a"},
+        {"key_number" : 65, "cmd_name": "key_a", "title": "KEY_A"},
+        {"key_number" : 259, "cmd_name": "up", "title": "KEY_UP"},
+        {"key_number" : 258, "cmd_name": "down", "title": "KEY_DOWN"},
+
+        {"key_number" : 261, "cmd_name": "right", "title": "KEY_RIGHT"},
+        {"key_number" : 260, "cmd_name": "left", "title": "KEY_LEFT"},
+        {"key_number" : 265, "cmd_name": "f1", "title": "KEY_F1"},
+    ]
 
     def __init__(self, player, vk):
         global PG_NAME, PG_VERSION
@@ -159,6 +167,146 @@ class CursesApplication(object):
 
         self.refresh()
 
+    def get_command(self):
+        ch = self.stdscr.getch()
+        for cmd in self.keys_cmd:
+            if ch == cmd["key_number"]:
+                return chmd["cmd_name"]
+
+        return None
+
+    """
+    Переместить вверх
+    """
+    def up(self):
+        if self.is_select_trak_list is True:
+            self.track_list.move_up()
+        elif self.is_view_albom_list is True:
+            self.alboms_win.move_up()
+
+    """
+    Переместить вниз
+    """
+    def down(self):
+        if self.is_select_trak_list is True:
+            self.track_list.move_down()
+        elif self.is_view_albom_list is True:
+            self.alboms_win.move_down()
+
+    """
+    Уменьшаю громкость
+    """
+    def left(self):
+        sound_vol = float(self.player.get_sound_volume())
+        if sound_vol > 0.01:
+            sound_vol -= float(round(float(0.05), 2))
+            if sound_vol > 0:
+                self.player.set_sound_volume(round(sound_vol,2))
+                self.system_info.set_sound_volume(self.player.get_sound_volume())
+    """
+    Увеличиваю громкость
+    """
+    def right(self):
+        sound_vol = float(self.player.get_sound_volume())
+        if sound_vol < 1:
+            sound_vol += float(round(float(0.05), 2))
+            if sound_vol < 100:
+                self.player.set_sound_volume(round(sound_vol,2))
+                self.system_info.set_sound_volume(self.player.get_sound_volume())
+
+
+    """
+    Выбор трека для воспроизведения
+    """
+    def enter(self):
+        if self.is_select_trak_list is True:
+            track = self.track_list.get_select_data()
+            self.player.pause()
+            self.player.add_track(track.url)
+            self.player.play()
+            self.system_info.set_status_playning()
+            self.track_info.set_data(track)
+        elif self.is_view_albom_list is True:
+            albom = self.alboms_win.get_select_data()
+            self.vk.load_traks()
+            # отображаю все песни
+            if albom.id is not None:
+                self.vk.load_traks(albom.id)
+            else:
+                self.vk.load_traks()
+
+            self.track_list.set_data(self.vk.tracks)
+            self.track_list.show()
+            self.track_list.hide_cursor()
+
+    """
+    Поставить/снаять с паузы
+    """
+    def space(self):
+        if self.player.playing == True:
+                self.system_info.set_status_paused()        
+                self.player.pause()
+        else:
+            self.system_info.set_status_playning()
+            self.player.play()
+
+    def key_q(self):
+        self.is_stop = True
+
+    """
+    Промотать вперед
+    """
+    def key_d(self):
+        tm = self.player.time()
+        if tm is not None:
+            cur, total = tm
+            if total != 0:
+                self.player.pause()
+                if cur + PG_SEEK_TIME < total:
+                    self.player.seek(cur + PG_SEEK_TIME)
+                else:
+                    self.player.seek(total-1)
+                self.player.play()
+
+    """
+    Промотать назад
+    """
+    def key_a(self):
+        tm = self.player.time()
+        if tm is not None:
+            cur, total = tm
+            if total != 0:
+                self.player.pause()
+                if cur - PG_SEEK_TIME > 0:
+                    self.player.seek(cur - PG_SEEK_TIME)
+                else:
+                    self.player.seek(0)
+                self.player.play()
+
+    def key_tab(self):
+        # при выборе "пингвина" TAB не будет работать
+        #if self.is_view_albom_list is False:
+        if self.is_select_trak_list is True:
+            self.track_list.hide_cursor()
+            self.alboms_win.show_cursor()
+        else:
+            self.track_list.show_cursor()
+            self.alboms_win.hide_cursor()
+
+        self.is_select_trak_list = not self.is_select_trak_list
+
+
+    def key_f1(self):
+        if self.is_view_albom_list is True:
+            self.is_view_albom_list = False
+            self.is_select_trak_list = False        
+        else:
+            self.is_view_albom_list = True
+
+        self.is_select_trak_list = True
+        self.refresh()
+
+
     # цикл для curses и по совместительству основной цикл приложения 
     def loop(self):
         # добавляю и вывожу данные
@@ -177,128 +325,13 @@ class CursesApplication(object):
         self.is_stop = False
         
         while self.is_stop is False:
-            self.ch = self.stdscr.getch()
-            # Up
-            if  self.ch == self.KEY_UP:#259:
-                if self.is_select_trak_list is True:
-                    self.track_list.move_up()
-                elif self.is_view_albom_list is True:
-                    self.alboms_win.move_up()
-            # Down
-            elif self.ch == self.KEY_DOWN:#258:
-                if self.is_select_trak_list is True:
-                    self.track_list.move_down()
-                elif self.is_view_albom_list is True:
-                    self.alboms_win.move_down()
-            # Left  ----
-            elif self.ch == self.KEY_LEFT:#260:
-                sound_vol = float(self.player.get_sound_volume())
-                if sound_vol > 0.01:
-                    sound_vol -= float(round(float(0.05), 2))
-                    if sound_vol > 0:
-                        self.player.set_sound_volume(round(sound_vol,2))
-                        self.system_info.set_sound_volume(self.player.get_sound_volume())
-            # Right ++++
-            elif self.ch == self.KEY_RIGHT:#261:
-                sound_vol = float(self.player.get_sound_volume())
-                if sound_vol < 1:
-                    sound_vol += float(round(float(0.05), 2))
-                    if sound_vol < 100:
-                        self.player.set_sound_volume(round(sound_vol,2))
-                        self.system_info.set_sound_volume(self.player.get_sound_volume())
-            # Enter
-            elif self.ch == self.KEY_ENTER:#10:
-                if self.is_select_trak_list is True:
-                    track = self.track_list.get_select_data()
-                    self.player.pause()
-                    self.player.add_track(track.url)
-                    self.player.play()
-                    self.system_info.set_status_playning()
-                    self.track_info.set_data(track)
-                elif self.is_view_albom_list is True:
-                    albom = self.alboms_win.get_select_data()
-                    
-                    self.vk.load_traks()
-       
-                    # отображаю все песни
-                    if albom.id is not None:
-                        self.vk.load_traks(albom.id)
-                    else:
-                        self.vk.load_traks()
-
-                    self.track_list.set_data(self.vk.tracks)
-                    self.track_list.show()
-                    self.track_list.hide_cursor()
-            # Space
-            elif self.ch == self.KEY_SPACE:#32:
-                if self.player.playing == True:
-                    self.system_info.set_status_paused()        
-                    self.player.pause()
-                else:
-                    self.system_info.set_status_playning()
-                    self.player.play()
-            # Q/q
-            elif self.ch == self.KEY_Q or self.ch == self.KEY_q:
-                self.is_stop = True
-            # Key D/d seeek -->
-            elif self.ch == self.KEY_D or self.ch == self.KEY_d:
-                tm = self.player.time()
-                if tm is not None:
-                    cur, total = tm
-                    if total != 0:
-                        self.player.pause()
-                        if cur + PG_SEEK_TIME < total:
-                            self.player.seek(cur + PG_SEEK_TIME)
-                        else:
-                            self.player.seek(total-1)
-                        self.player.play()
-            # Key A,a seek <----
-            elif self.ch == self.KEY_A or self.ch == self.KEY_a:
-                tm = self.player.time()
-                if tm is not None:
-                    cur, total = tm
-                    if total != 0:
-                        self.player.pause()
-                        if cur - PG_SEEK_TIME > 0:
-                            self.player.seek(cur - PG_SEEK_TIME)
-                        else:
-                            self.player.seek(0)
-                        self.player.play()
-            # TAB
-            elif self.ch == 9:
-                # при выборе "пингвина" TAB не будет работать
-                #if self.is_view_albom_list is False:
-                if self.is_select_trak_list is True:
-                    self.track_list.hide_cursor()
-                    self.alboms_win.show_cursor()
-                else:
-                    self.track_list.show_cursor()
-                    self.alboms_win.hide_cursor()
-
-                self.is_select_trak_list = not self.is_select_trak_list
-                #print '!!!!!!!!!!!!!!'
-            elif self.ch == self.KEY_F1:
-                if self.is_view_albom_list is True:
-                    self.is_view_albom_list = False
-                    self.is_select_trak_list = False        
-                else:
-                    self.is_view_albom_list = True
-
-                self.is_select_trak_list = True
-                self.refresh()
-            else:
-                """
-                track = self.track_list.next_track()
-                self.player.add_track(track.url)
-                self.player.play()
-                self.system_info.set_status_playning()
-                self.track_info.set_data(track)
-                """
-            #
-                
+            try:
+                command = self.get_command()
+                if command is not None:
+                    f = getattr(self, command)
+                    f()
+            except Exception as e:
                 pass
-                #print self.ch
-                #self.refresh()
     
     # выполняет обновление данных приложения
     def update_data(self):
