@@ -171,7 +171,7 @@ class CursesApplication(object):
         ch = self.stdscr.getch()
         for cmd in self.keys_cmd:
             if ch == cmd["key_number"]:
-                return chmd["cmd_name"]
+                return cmd["cmd_name"]
 
         return None
 
@@ -325,13 +325,14 @@ class CursesApplication(object):
         self.is_stop = False
         
         while self.is_stop is False:
-            try:
+            if True:
+            #try:
                 command = self.get_command()
                 if command is not None:
                     f = getattr(self, command)
                     f()
-            except Exception as e:
-                pass
+            #except Exception as e:
+            #    print e
     
     # выполняет обновление данных приложения
     def update_data(self):
@@ -384,17 +385,14 @@ class ClockThread(threading.Thread):
     Выполняет обновления прогресс-бара. Костыль возник из-за бага, 
     когда приложение с ncurses не может обрабатывать сигналы 
     """
-
     def __init__(self, curses_app):
         threading.Thread.__init__(self)
         self.daemon = True
         self.curses_app = curses_app
 
     def run(self):
-
         while True:
             try:
-
                 time.sleep(TIME_SLEEP)
                 self.curses_app.update_data()
             except:
