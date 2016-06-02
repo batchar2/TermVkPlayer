@@ -55,8 +55,6 @@ class VkStorage(BaseStorage):
         
         return True, "Ok"
 
-
-
     def load_traks(self, albom_id=None):
         """ Производит загрузку списка треков """
         if self.__vk is not None:
@@ -73,7 +71,6 @@ class VkStorage(BaseStorage):
         """ Производит загрузку списка альбомов пользователя """
         if self.__vk is not None:
             self.__alboms = self.__vk.method('audio.getAlbums', {'count':100})
-            #print self.__alboms
             return True
         else:
             return False
@@ -125,7 +122,6 @@ class VkStorage(BaseStorage):
                 }
                 alboms.append(item)
 
-        #print alboms
         return alboms
 
     def __get_genre_name(self, key):

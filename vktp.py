@@ -15,6 +15,9 @@ from ui.win_trackinfo import TrackInfoWin
 from ui.win_tracklist import TrackListWin
 from ui.win_alboms import AlbomsWin
 from ui.label_slk import LabelSlk
+
+from ui.win_login import LoginWin
+
 # импорт "плеера"
 from player.gst_player import PlayerApp
 
@@ -28,8 +31,87 @@ PG_VERSION = "v0.01"
 TIME_SLEEP = 0.3
 PG_SEEK_TIME = 30
 
+""" Инициализация и хранение стилей приложения """
+class CursesProperty(object):
+    
+    """ Инициализация ncurses, инициализация терминала """
+    def initscr(self):
+        self.stdscr = curses.initscr()
+        self.stdscr.clear()
 
+        curses.cbreak()
+        curses.noecho()
+        self.stdscr.keypad(0)
 
+        #screen.keypad(0);
+        curses.curs_set(0)
+        curses.start_color()
+        curses.use_default_colors()
+
+         # получаю размеры экрана и оговариваю работу с клавиатурой
+        self.stdscr.keypad(1)
+        self.rows, self.cols = self.stdscr.getmaxyx()
+
+        # Создаю главное окно. Конечно, можно было и без него обойтись, однако на будующее зазор оставлю
+        self._win_general = curses.newwin(self.rows, self.cols, 0, 0)
+    
+    """ Возврат указателя на главное окно, на главном окне выводятся все остальные подокна """
+    @property
+    def screen(self):
+        return self._win_general
+
+    """ Инициализация цветов """
+    def initclr(self):
+        # инициализация цветовых схем
+        if curses.can_change_color(): 
+            init_color(-1, 0, 0, 0)
+
+        # отмеченный на воспроизмедение трек
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_YELLOW)
+        # невыделенный трек
+        curses.init_pair(2, curses.COLOR_GREEN, -1)
+        # выделенный трек
+        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_GREEN)
+        # для прогрессбара
+        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLUE)
+        curses.init_pair(5, curses.COLOR_YELLOW, -1)
+        # заголовки окон
+        curses.init_pair(6, curses.COLOR_CYAN, -1)
+        # Голова и тело пигвина, черные
+        curses.init_pair(7, curses.COLOR_BLUE, -1)
+        curses.init_pair(8, curses.COLOR_YELLOW, -1)
+        curses.init_pair(9, curses.COLOR_WHITE, -1)
+        # эквалайзер
+        curses.init_pair(10, curses.COLOR_WHITE, curses.COLOR_WHITE)
+        curses.init_pair(11, curses.COLOR_CYAN, curses.COLOR_CYAN)
+        curses.init_pair(12, curses.COLOR_BLUE, curses.COLOR_BLUE)
+        curses.init_pair(13, curses.COLOR_YELLOW, curses.COLOR_YELLOW)
+        curses.init_pair(14, curses.COLOR_GREEN, curses.COLOR_GREEN)
+        curses.init_pair(15, curses.COLOR_RED, curses.COLOR_RED)
+        # slc
+        curses.init_pair(16, curses.COLOR_BLACK, curses.COLOR_CYAN)
+        curses.init_pair(17, curses.COLOR_WHITE, -1)
+
+        self.TRACK_PLAY_COLOR = curses.color_pair(1)
+        self.TRAK_ITEM_COLOR = curses.color_pair(2)
+        self.TRACK_SELECT_COLOR = curses.color_pair(3)
+
+        self.COLOR_CONTENT = curses.color_pair(6)
+
+        self.COLOR_PGBAR_PLAYNING = curses.color_pair(4)
+        self.COLOR_PGBAR_FREE = curses.color_pair(5)
+
+        self.TUX_COLOR_BLUE = curses.color_pair(7)
+        self.TUX_COLOR_YELLOW = curses.color_pair(8)
+        self.TUX_COLOR_WHILE = curses.color_pair(9)
+
+        self.ALBOM_PLAY_COLOR = curses.color_pair(8)
+        self.ALBOM_ITEM_COLOR = curses.color_pair(6)
+        self.ALBOM_SELECT_COLOR = curses.color_pair(9)
+
+        # цвет текса и цвет номера команды
+        self.COLOR_SLC = curses.color_pair(16)
+        self.COLOR_NUMBER = curses.color_pair(17)
 
 
 """ Инициализация curses, создание окон, запуск плеера в новом потоке и главный цикл приложения """
@@ -56,6 +138,7 @@ class CursesApplication(object):
     def __init__(self, player, vk):
         global PG_NAME, PG_VERSION
 
+        """
         self.stdscr = curses.initscr()
         self.stdscr.clear()
 
@@ -103,7 +186,10 @@ class CursesApplication(object):
         # получаю размеры экрана и оговариваю работу с клавиатурой
         self.stdscr.keypad(1)
         self.rows, self.cols = self.stdscr.getmaxyx()
+        """
 
+
+        """
         # Создаю главное окно. Конечно, можно было и без него обойтись, однако на будующее зазор оставлю
         self.win = curses.newwin(self.rows, self.cols, 0, 0)
 
@@ -128,7 +214,7 @@ class CursesApplication(object):
         # цвет текса и цвет номера команды
         COLOR_SLC = curses.color_pair(16)
         COLOR_NUMBER = curses.color_pair(17)
-
+        """
         # выбрана левая панель с треками
         self.is_select_trak_list = True 
         # отображать список альбомов
@@ -306,10 +392,9 @@ class CursesApplication(object):
         self.is_select_trak_list = True
         self.refresh()
 
-
-    # цикл для curses и по совместительству основной цикл приложения 
-    def loop(self):
-        # добавляю и вывожу данные
+    """ Загрузка данных """
+    def __load_data(self):
+         # добавляю и вывожу данные
         self.vk.load_traks()
         self.vk.load_alboms()
 
@@ -322,6 +407,13 @@ class CursesApplication(object):
         # отмечаю альбом проигрываемый
         self.alboms_win.get_select_data()
 
+
+    """ Цикл для curses и по совместительству основной цикл приложения  """
+    def loop(self):
+        self.__load_data()
+        
+        #login = LoginWin(self.win, 10, 20, self.rows/2, self.cols/2)
+       
         self.is_stop = False
         
         while self.is_stop is False:
@@ -402,7 +494,7 @@ class ClockThread(threading.Thread):
 """ Производит инициализация curses и gstreamer """
 class Application:
     def __init__(self):
-
+        """
         # получаю доступ к вк
         vk = Storage(login, password, 'VK').get()
 
@@ -418,15 +510,22 @@ class Application:
         # стартую отдельный поток, для генерации событий, т.к. не работают с ncurses сигналы. ХЗ почему. Странно очень
         clock = ClockThread(self.ca)
         clock.start()
-
+        """
     def run(self):
         self.ca.loop()
 
 
 if __name__ == '__main__':
-    sys.stdout.write('Login: ')
-    login = raw_input()    
-    password = getpass.getpass()
+    # штшциализирую ncurses
+    curses_property = CursesProperty()
+    curses_property.initscr()
+    curses_property.initclr()
+    #вывожу окно логина
+
+    login = LoginWin(curses_property.screen, 10, 20, curses_property.rows/2, curses_property.cols/2, curses_property.ALBOM_PLAY_COLOR)
+    #sys.stdout.write('Login: ')
+    #login = raw_input()    
+    #password = getpass.getpass()
 
     app = Application()
     app.run()
