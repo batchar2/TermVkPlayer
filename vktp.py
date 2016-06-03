@@ -118,103 +118,38 @@ class CursesProperty(object):
 class CursesApplication(object):
     
     keys_cmd = [
-        {"key_number" : 9, "cmd_name": "key_tab", "title": "KEY_TAB"},
-        {"key_number" : 10, "cmd_name": "enter", "title": "KEY_ENTER"},
-        {"key_number" : 32, "cmd_name": "space", "title": "KEY_SPACE"},
-        {"key_number" : 100, "cmd_name": "key_d", "title": "KEY_d"},
-        {"key_number" : 68, "cmd_name": "key_d", "title": "KEY_D"},
-        {"key_number" : 113, "cmd_name": "key_q", "title": "KEY_q"},
-        {"key_number" : 68, "cmd_name": "key_q", "title": "KEY_Q"},
-        {"key_number" : 97, "cmd_name": "key_a", "title": "KEY_a"},
-        {"key_number" : 65, "cmd_name": "key_a", "title": "KEY_A"},
-        {"key_number" : 259, "cmd_name": "up", "title": "KEY_UP"},
-        {"key_number" : 258, "cmd_name": "down", "title": "KEY_DOWN"},
+        {"key_number" : 9, "cmd_name": "__key_tab", "title": "KEY_TAB"},
+        {"key_number" : 10, "cmd_name": "__enter", "title": "KEY_ENTER"},
+        {"key_number" : 32, "cmd_name": "__space", "title": "KEY_SPACE"},
+        {"key_number" : 100, "cmd_name": "__key_d", "title": "KEY_d"},
+        {"key_number" : 68, "cmd_name": "__key_d", "title": "KEY_D"},
+        {"key_number" : 113, "cmd_name": "__key_q", "title": "KEY_q"},
+        {"key_number" : 68, "cmd_name": "__key_q", "title": "KEY_Q"},
+        {"key_number" : 97, "cmd_name": "__key_a", "title": "KEY_a"},
+        {"key_number" : 65, "cmd_name": "__key_a", "title": "KEY_A"},
+        {"key_number" : 259, "cmd_name": "__up", "title": "KEY_UP"},
+        {"key_number" : 258, "cmd_name": "__down", "title": "KEY_DOWN"},
 
-        {"key_number" : 261, "cmd_name": "right", "title": "KEY_RIGHT"},
-        {"key_number" : 260, "cmd_name": "left", "title": "KEY_LEFT"},
-        {"key_number" : 265, "cmd_name": "f1", "title": "KEY_F1"},
+        {"key_number" : 261, "cmd_name": "__right", "title": "KEY_RIGHT"},
+        {"key_number" : 260, "cmd_name": "__left", "title": "KEY_LEFT"},
+        {"key_number" : 265, "cmd_name": "__f1", "title": "KEY_F1"},
     ]
 
     def __init__(self, player, vk):
         global PG_NAME, PG_VERSION
+        # штшциализирую ncurses
+        self.curses_property = CursesProperty()
+        self.curses_property.initscr()
+        self.curses_property.initclr()
 
-        """
-        self.stdscr = curses.initscr()
-        self.stdscr.clear()
+        # если отображается ui плеера
+        self.is_view_ui_player = False
 
-        curses.cbreak()
-        curses.noecho()
-        self.stdscr.keypad(0)
+        self.win = self.curses_property.screen
+        self.rows = self.curses_property.rows
+        self.cols = self.curses_property.cols
 
-        #screen.keypad(0);
-        curses.curs_set(0)
-        curses.start_color()
-        curses.use_default_colors()
-
-        # инициализация цветовых схем
-        if curses.can_change_color(): 
-            init_color(-1, 0, 0, 0)
-        
-        # отмеченный на воспроизмедение трек
-        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_YELLOW)
-        # невыделенный трек
-        curses.init_pair(2, curses.COLOR_GREEN, -1)
-        # выделенный трек
-        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_GREEN)
-
-        # для прогрессбара
-        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLUE)
-        curses.init_pair(5, curses.COLOR_YELLOW, -1)
-        # заголовки окон
-        curses.init_pair(6, curses.COLOR_CYAN, -1)
-        # Голова и тело пигвина, черные
-        curses.init_pair(7, curses.COLOR_BLUE, -1)
-        curses.init_pair(8, curses.COLOR_YELLOW, -1)
-        curses.init_pair(9, curses.COLOR_WHITE, -1)
-        # эквалайзер
-        curses.init_pair(10, curses.COLOR_WHITE, curses.COLOR_WHITE)
-        curses.init_pair(11, curses.COLOR_CYAN, curses.COLOR_CYAN)
-        curses.init_pair(12, curses.COLOR_BLUE, curses.COLOR_BLUE)
-        curses.init_pair(13, curses.COLOR_YELLOW, curses.COLOR_YELLOW)
-        curses.init_pair(14, curses.COLOR_GREEN, curses.COLOR_GREEN)
-        curses.init_pair(15, curses.COLOR_RED, curses.COLOR_RED)
-
-        # slc
-        curses.init_pair(16, curses.COLOR_BLACK, curses.COLOR_CYAN)
-        curses.init_pair(17, curses.COLOR_WHITE, -1)
-
-        # получаю размеры экрана и оговариваю работу с клавиатурой
-        self.stdscr.keypad(1)
-        self.rows, self.cols = self.stdscr.getmaxyx()
-        """
-
-
-        """
-        # Создаю главное окно. Конечно, можно было и без него обойтись, однако на будующее зазор оставлю
-        self.win = curses.newwin(self.rows, self.cols, 0, 0)
-
-        TRACK_PLAY_COLOR = curses.color_pair(1)
-        TRAK_ITEM_COLOR = curses.color_pair(2)
-        TRACK_SELECT_COLOR = curses.color_pair(3)
-
-        COLOR_CONTENT = curses.color_pair(6)
-
-        COLOR_PGBAR_PLAYNING = curses.color_pair(4)
-        COLOR_PGBAR_FREE = curses.color_pair(5)
-
-        TUX_COLOR_BLUE = curses.color_pair(7)
-        TUX_COLOR_YELLOW = curses.color_pair(8)
-        TUX_COLOR_WHILE = curses.color_pair(9)
-
-
-        ALBOM_PLAY_COLOR = curses.color_pair(8)
-        ALBOM_ITEM_COLOR = curses.color_pair(6)
-        ALBOM_SELECT_COLOR = curses.color_pair(9)
-
-        # цвет текса и цвет номера команды
-        COLOR_SLC = curses.color_pair(16)
-        COLOR_NUMBER = curses.color_pair(17)
-        """
+    def __view_ui_player(self):
         # выбрана левая панель с треками
         self.is_select_trak_list = True 
         # отображать список альбомов
@@ -222,37 +157,49 @@ class CursesApplication(object):
         self.player = player
         self.vk = vk
 
-        self.__help_f1 = LabelSlk(0, self.win, (self.rows, self.cols,),  u"Help", COLOR_SLC, COLOR_NUMBER)
-        self.__edit_f2 = LabelSlk(1, self.win, (self.rows, self.cols,),  u"Edit", COLOR_SLC, COLOR_NUMBER)
-        self.__copy_f3 = LabelSlk(2, self.win, (self.rows, self.cols,),  u"Copy", COLOR_SLC, COLOR_NUMBER)
-        self.__move_f4 = LabelSlk(3, self.win, (self.rows, self.cols,),  u"Move", COLOR_SLC, COLOR_NUMBER)
-        self.__newalbom_f5 = LabelSlk(4, self.win, (self.rows, self.cols,),  u"NewAlbum", COLOR_SLC, COLOR_NUMBER)
-        self.__rm_f6 = LabelSlk(5, self.win, (self.rows, self.cols,),  u"Remove", COLOR_SLC, COLOR_NUMBER)
-        self.__random_f7 = LabelSlk(6, self.win, (self.rows, self.cols,),  u"Random", COLOR_SLC, COLOR_NUMBER)
-        self.__move_exit = LabelSlk(7, self.win, (self.rows, self.cols,),  u"Exit", COLOR_SLC, COLOR_NUMBER)
+        self.__help_f1 = LabelSlk(0, self.win, (self.rows, self.cols,),  u"Help", 
+                                    self.curses_property.COLOR_SLC, self.curses_property.COLOR_NUMBER)
+        self.__edit_f2 = LabelSlk(1, self.win, (self.rows, self.cols,),  u"Edit", 
+                                    self.curses_property.COLOR_SLC, self.curses_property.COLOR_NUMBER)
+
+        self.__copy_f3 = LabelSlk(2, self.win, (self.rows, self.cols,),  u"Copy", 
+                                    self.curses_property.COLOR_SLC, self.curses_property.COLOR_NUMBER)
+
+        self.__move_f4 = LabelSlk(3, self.win, (self.rows, self.cols,),  u"Move", 
+                                    self.curses_property.COLOR_SLC, self.curses_property.COLOR_NUMBER)
+        self.__newalbom_f5 = LabelSlk(4, self.win, (self.rows, self.cols,),  u"NewAlbum", 
+                                    self.curses_property.COLOR_SLC, self.curses_property.COLOR_NUMBER)
+        self.__rm_f6 = LabelSlk(5, self.win, (self.rows, self.cols,),  u"Remove", 
+                                    self.curses_property.COLOR_SLC, self.curses_property.COLOR_NUMBER)
+        self.__random_f7 = LabelSlk(6, self.win, (self.rows, self.cols,),  u"Random", 
+                                        self.curses_property.COLOR_SLC, self.curses_property.COLOR_NUMBER)
+        self.__move_exit = LabelSlk(7, self.win, (self.rows, self.cols,),  u"Exit", 
+                                        self.curses_property.COLOR_SLC, self.curses_property.COLOR_NUMBER)
 
         # создаю окна
         self.system_info = SystemInfoWin(self.win, 6, self.cols/5, 0, 0, 
-                                            PG_NAME, PG_VERSION, COLOR_CONTENT)
-        self.track_info = TrackInfoWin(self.win, 6, self.cols/3, 0, self.cols/5, COLOR_CONTENT)
+                                            PG_NAME, PG_VERSION, self.curses_property.COLOR_CONTENT)
+        self.track_info = TrackInfoWin(self.win, 6, self.cols/3, 0, self.cols/5, self.curses_property.COLOR_CONTENT)
         #self.ekvalayzer = EkvalayzerWin(self.win, 6, self.cols - self.cols/3 - self.cols/5, 0, self.cols/3 + self.cols/5)
-        self.track_duration = ProgressBarWin(self.win, 3, self.cols, 6, 0, COLOR_PGBAR_PLAYNING, COLOR_PGBAR_FREE)
+        self.track_duration = ProgressBarWin(self.win, 3, self.cols, 6, 0, 
+                                                self.curses_property.COLOR_PGBAR_PLAYNING, self.curses_property.COLOR_PGBAR_FREE)
         
         self.track_list = TrackListWin(self.win, self.rows-10, self.cols - 48, 9, 0,
-                                        TRACK_SELECT_COLOR, TRAK_ITEM_COLOR, TRACK_PLAY_COLOR)
+                                            self.curses_property.TRACK_SELECT_COLOR, self.curses_property.TRAK_ITEM_COLOR, self.curses_property.TRACK_PLAY_COLOR)
 
         # 48 символа макс. длина. инфа статичная
-        self.navigation = NavigationWin(self.win, self.rows-10, 48, 9, self.cols - 48, TUX_COLOR_BLUE,
-                                         TUX_COLOR_YELLOW, TUX_COLOR_WHILE)
+        self.navigation = NavigationWin(self.win, self.rows-10, 48, 9, self.cols - 48, self.curses_property.TUX_COLOR_BLUE,
+                                            self.curses_property.TUX_COLOR_YELLOW, self.curses_property.TUX_COLOR_WHILE)
 
         self.alboms_win = AlbomsWin(self.win, self.rows-10, 48, 9, self.cols - 48, self.cols,
-                                        ALBOM_SELECT_COLOR, ALBOM_ITEM_COLOR, ALBOM_PLAY_COLOR)
+                                        self.curses_property.ALBOM_SELECT_COLOR, self.curses_property.ALBOM_ITEM_COLOR, self.curses_property.ALBOM_PLAY_COLOR)
 
 
         self.system_info.set_sound_volume(self.player.get_sound_volume())
 
         self.refresh()
 
+    """ Пасринг команд от пользователя. Сопоставление с объявленными командами """
     def get_command(self):
         ch = self.stdscr.getch()
         for cmd in self.keys_cmd:
@@ -261,38 +208,31 @@ class CursesApplication(object):
 
         return None
 
-    """
-    Переместить вверх
-    """
-    def up(self):
+    """ Переместить вверх """
+    def __up(self):
         if self.is_select_trak_list is True:
             self.track_list.move_up()
         elif self.is_view_albom_list is True:
             self.alboms_win.move_up()
 
-    """
-    Переместить вниз
-    """
-    def down(self):
+    """ Переместить вниз """
+    def __down(self):
         if self.is_select_trak_list is True:
             self.track_list.move_down()
         elif self.is_view_albom_list is True:
             self.alboms_win.move_down()
 
-    """
-    Уменьшаю громкость
-    """
-    def left(self):
+    """ Уменьшаю громкость """
+    def __left(self):
         sound_vol = float(self.player.get_sound_volume())
         if sound_vol > 0.01:
             sound_vol -= float(round(float(0.05), 2))
             if sound_vol > 0:
                 self.player.set_sound_volume(round(sound_vol,2))
                 self.system_info.set_sound_volume(self.player.get_sound_volume())
-    """
-    Увеличиваю громкость
-    """
-    def right(self):
+    
+    """ Увеличиваю громкость """
+    def __right(self):
         sound_vol = float(self.player.get_sound_volume())
         if sound_vol < 1:
             sound_vol += float(round(float(0.05), 2))
@@ -301,10 +241,8 @@ class CursesApplication(object):
                 self.system_info.set_sound_volume(self.player.get_sound_volume())
 
 
-    """
-    Выбор трека для воспроизведения
-    """
-    def enter(self):
+    """ Выбор трека для воспроизведения """
+    def __enter(self):
         if self.is_select_trak_list is True:
             track = self.track_list.get_select_data()
             self.player.pause()
@@ -325,10 +263,8 @@ class CursesApplication(object):
             self.track_list.show()
             self.track_list.hide_cursor()
 
-    """
-    Поставить/снаять с паузы
-    """
-    def space(self):
+    """ Поставить/снять с паузы """
+    def __space(self):
         if self.player.playing == True:
                 self.system_info.set_status_paused()        
                 self.player.pause()
@@ -336,13 +272,11 @@ class CursesApplication(object):
             self.system_info.set_status_playning()
             self.player.play()
 
-    def key_q(self):
+    def __key_q(self):
         self.is_stop = True
 
-    """
-    Промотать вперед
-    """
-    def key_d(self):
+    """ Промотать вперед """
+    def __key_d(self):
         tm = self.player.time()
         if tm is not None:
             cur, total = tm
@@ -354,10 +288,8 @@ class CursesApplication(object):
                     self.player.seek(total-1)
                 self.player.play()
 
-    """
-    Промотать назад
-    """
-    def key_a(self):
+    """ Промотать назад """
+    def __key_a(self):
         tm = self.player.time()
         if tm is not None:
             cur, total = tm
@@ -369,7 +301,7 @@ class CursesApplication(object):
                     self.player.seek(0)
                 self.player.play()
 
-    def key_tab(self):
+    def __key_tab(self):
         # при выборе "пингвина" TAB не будет работать
         #if self.is_view_albom_list is False:
         if self.is_select_trak_list is True:
@@ -382,7 +314,7 @@ class CursesApplication(object):
         self.is_select_trak_list = not self.is_select_trak_list
 
 
-    def key_f1(self):
+    def __key_f1(self):
         if self.is_view_albom_list is True:
             self.is_view_albom_list = False
             self.is_select_trak_list = False        
@@ -406,27 +338,8 @@ class CursesApplication(object):
         
         # отмечаю альбом проигрываемый
         self.alboms_win.get_select_data()
-
-
-    """ Цикл для curses и по совместительству основной цикл приложения  """
-    def loop(self):
-        self.__load_data()
-        
-        #login = LoginWin(self.win, 10, 20, self.rows/2, self.cols/2)
-       
-        self.is_stop = False
-        
-        while self.is_stop is False:
-            if True:
-            #try:
-                command = self.get_command()
-                if command is not None:
-                    f = getattr(self, command)
-                    f()
-            #except Exception as e:
-            #    print e
     
-    # выполняет обновление данных приложения
+    """ Выполняет обновление данных приложения """
     def update_data(self):
         # прогресс-бар и время
         tm = self.player.time()
@@ -443,7 +356,7 @@ class CursesApplication(object):
             self.track_info.set_data(track)
         
 
-    # обновление экрана и всех окон
+    """ Обновление экрана и всех окон """
     def refresh(self):
         #return
         self.stdscr.refresh()
@@ -469,6 +382,28 @@ class CursesApplication(object):
             self.alboms_win.refresh()
         else:
             self.navigation.refresh()
+
+    """ Цикл для curses и по совместительству основной цикл приложения  """
+    def loop(self):
+        self.__load_data()
+        
+        
+        #self.__is_view_ui_player = False
+        #self.view_ui_player()
+        
+        #login = LoginWin(self.win, 10, 20, self.rows/2, self.cols/2)
+       
+        self.is_stop = False
+        
+        while self.is_stop is False:
+            if True:
+            #try:
+                command = self.get_command()
+                if command is not None:
+                    f = getattr(self, command)
+                    f()
+            #except Exception as e:
+            #    print e
             
 
 
@@ -494,7 +429,7 @@ class ClockThread(threading.Thread):
 """ Производит инициализация curses и gstreamer """
 class Application:
     def __init__(self):
-        """
+        
         # получаю доступ к вк
         vk = Storage(login, password, 'VK').get()
 
@@ -510,22 +445,18 @@ class Application:
         # стартую отдельный поток, для генерации событий, т.к. не работают с ncurses сигналы. ХЗ почему. Странно очень
         clock = ClockThread(self.ca)
         clock.start()
-        """
+        
     def run(self):
         self.ca.loop()
 
 
 if __name__ == '__main__':
-    # штшциализирую ncurses
-    curses_property = CursesProperty()
-    curses_property.initscr()
-    curses_property.initclr()
+    
     #вывожу окно логина
-
-    login = LoginWin(curses_property.screen, 10, 20, curses_property.rows/2, curses_property.cols/2, curses_property.ALBOM_PLAY_COLOR)
-    #sys.stdout.write('Login: ')
-    #login = raw_input()    
-    #password = getpass.getpass()
+    #login = LoginWin(curses_property.screen, 10, 20, curses_property.rows/2, curses_property.cols/2, curses_property.ALBOM_PLAY_COLOR)
+    sys.stdout.write('Login: ')
+    login = raw_input()    
+    password = getpass.getpass()
 
     app = Application()
     app.run()
