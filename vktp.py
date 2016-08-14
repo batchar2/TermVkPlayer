@@ -60,12 +60,18 @@ class CursesProperty(object):
     def screen(self):
         return self._win_general
 
+    #def refresh():
+    #   self.stdscr.refresh()
+    #    return self.stdscr
+
+    #def getch():
+    #    return self.stdscr.getch()
+
     """ Инициализация цветов """
     def initclr(self):
         # инициализация цветовых схем
         if curses.can_change_color(): 
             init_color(-1, 0, 0, 0)
-
         # отмеченный на воспроизмедение трек
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_YELLOW)
         # невыделенный трек
@@ -137,6 +143,10 @@ class CursesApplication(object):
 
     def __init__(self, player, vk):
         global PG_NAME, PG_VERSION
+
+        self.player = player
+        self.vk = vk
+
         # штшциализирую ncurses
         self.curses_property = CursesProperty()
         self.curses_property.initscr()
@@ -149,13 +159,15 @@ class CursesApplication(object):
         self.rows = self.curses_property.rows
         self.cols = self.curses_property.cols
 
+        self.__view_ui_player()
+
     def __view_ui_player(self):
         # выбрана левая панель с треками
         self.is_select_trak_list = True 
         # отображать список альбомов
         self.is_view_albom_list = True
-        self.player = player
-        self.vk = vk
+        
+        
 
         self.__help_f1 = LabelSlk(0, self.win, (self.rows, self.cols,),  u"Help", 
                                     self.curses_property.COLOR_SLC, self.curses_property.COLOR_NUMBER)
@@ -201,7 +213,7 @@ class CursesApplication(object):
 
     """ Пасринг команд от пользователя. Сопоставление с объявленными командами """
     def get_command(self):
-        ch = self.stdscr.getch()
+        ch = self.curses_property.stdscr.getch()
         for cmd in self.keys_cmd:
             if ch == cmd["key_number"]:
                 return cmd["cmd_name"]
@@ -230,7 +242,7 @@ class CursesApplication(object):
             if sound_vol > 0:
                 self.player.set_sound_volume(round(sound_vol,2))
                 self.system_info.set_sound_volume(self.player.get_sound_volume())
-    
+
     """ Увеличиваю громкость """
     def __right(self):
         sound_vol = float(self.player.get_sound_volume())
@@ -344,7 +356,6 @@ class CursesApplication(object):
         # прогресс-бар и время
         tm = self.player.time()
         if tm is not None:
-
             current_time, total_time = tm
             self.track_duration.set_time(current_time, total_time)
         # след.трек, т.к. закончился текущий
@@ -359,7 +370,7 @@ class CursesApplication(object):
     """ Обновление экрана и всех окон """
     def refresh(self):
         #return
-        self.stdscr.refresh()
+        self.curses_property.stdscr.refresh()
         self.win.refresh()
         
         self.system_info.refresh()
@@ -385,9 +396,7 @@ class CursesApplication(object):
 
     """ Цикл для curses и по совместительству основной цикл приложения  """
     def loop(self):
-        self.__load_data()
-        
-        
+        self.__load_data()        
         #self.__is_view_ui_player = False
         #self.view_ui_player()
         
@@ -396,14 +405,14 @@ class CursesApplication(object):
         self.is_stop = False
         
         while self.is_stop is False:
-            if True:
-            #try:
+            #if True:
+            try:
                 command = self.get_command()
                 if command is not None:
-                    f = getattr(self, command)
-                    f()
-            #except Exception as e:
-            #    print e
+                    # выполняю команду
+                    getattr(self, command)()
+            except AttributeError as e:
+                print e
             
 
 
@@ -454,9 +463,12 @@ if __name__ == '__main__':
     
     #вывожу окно логина
     #login = LoginWin(curses_property.screen, 10, 20, curses_property.rows/2, curses_property.cols/2, curses_property.ALBOM_PLAY_COLOR)
-    sys.stdout.write('Login: ')
-    login = raw_input()    
-    password = getpass.getpass()
+    
+    #sys.stdout.write('Login: ')
+    #login = raw_input()    
+    #password = getpass.getpass()
+    login = "skokov1992@mail.ru"
+    password = "putinvvico24"
 
     app = Application()
     app.run()
