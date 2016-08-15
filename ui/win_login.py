@@ -9,9 +9,9 @@ class LoginWin(BaseWin):
         #win = curses.newwin(rows, cols, 0, 0)
         self.parent_win = parent_win
 
-        self.win_set_title(u"System info")
+        self.win_set_title(u"VK Login")
         
-        self.win.addstr(2, 2, "Hello!", curses.color_pair(9))
+        self.win.addstr(2, 2, u"VK Login", curses.color_pair(9))
         self.refresh()
 
 

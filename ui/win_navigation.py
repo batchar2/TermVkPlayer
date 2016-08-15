@@ -105,6 +105,7 @@ class NavigationWin(BaseWin):
         self.win.addstr(29, 16, "888   '         ", self.color_blue)
         self.win.addstr(29, 32, ".::::::::::::", self.color_yellow)
 
+        return
         self.win.addstr(30, 2, "   ::::::::::::.", self.color_yellow)
         self.win.addstr(30, 18, "8    '      .:8", self.color_blue)
         self.win.addstr(30, 32, "::::::::::::.", self.color_yellow)

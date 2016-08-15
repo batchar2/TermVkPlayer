@@ -7,6 +7,8 @@ import time
 
 import curses
 
+from abc import ABCMeta, abstractmethod
+
 # импорт ui
 from ui.win_navigation import NavigationWin
 from ui.win_progressbar import ProgressBarWin
@@ -23,6 +25,9 @@ from player.gst_player import PlayerApp
 
 
 from storage.storage import Storage 
+
+# переделать
+from command.command import CursesApplicationInterface
 
 locale.setlocale(locale.LC_ALL,"")
 
@@ -123,29 +128,33 @@ class CursesProperty(object):
 """ Инициализация curses, создание окон, запуск плеера в новом потоке и главный цикл приложения """
 class CursesApplication(object):
     
+    """ Список кнопок и их обработчиков """
+    """
     keys_cmd = [
-        {"key_number" : 9, "cmd_name": "__key_tab", "title": "KEY_TAB"},
-        {"key_number" : 10, "cmd_name": "__enter", "title": "KEY_ENTER"},
-        {"key_number" : 32, "cmd_name": "__space", "title": "KEY_SPACE"},
-        {"key_number" : 100, "cmd_name": "__key_d", "title": "KEY_d"},
-        {"key_number" : 68, "cmd_name": "__key_d", "title": "KEY_D"},
-        {"key_number" : 113, "cmd_name": "__key_q", "title": "KEY_q"},
-        {"key_number" : 68, "cmd_name": "__key_q", "title": "KEY_Q"},
-        {"key_number" : 97, "cmd_name": "__key_a", "title": "KEY_a"},
-        {"key_number" : 65, "cmd_name": "__key_a", "title": "KEY_A"},
-        {"key_number" : 259, "cmd_name": "__up", "title": "KEY_UP"},
-        {"key_number" : 258, "cmd_name": "__down", "title": "KEY_DOWN"},
+        {"key_number" : 9, "cmd_name": "_key_tab", "title": "KEY_TAB"},
+        {"key_number" : 10, "cmd_name": "_enter", "title": "KEY_ENTER"},
+        {"key_number" : 32, "cmd_name": "_space", "title": "KEY_SPACE"},
+        {"key_number" : 100, "cmd_name": "_key_d", "title": "KEY_d"},
+        {"key_number" : 68, "cmd_name": "_key_d", "title": "KEY_D"},
+        {"key_number" : 113, "cmd_name": "_key_q", "title": "KEY_q"},
+        {"key_number" : 68, "cmd_name": "_key_q", "title": "KEY_Q"},
+        {"key_number" : 97, "cmd_name": "_key_a", "title": "KEY_a"},
+        {"key_number" : 65, "cmd_name": "_key_a", "title": "KEY_A"},
+        {"key_number" : 259, "cmd_name": "_up", "title": "KEY_UP"},
+        {"key_number" : 258, "cmd_name": "_down", "title": "KEY_DOWN"},
 
-        {"key_number" : 261, "cmd_name": "__right", "title": "KEY_RIGHT"},
-        {"key_number" : 260, "cmd_name": "__left", "title": "KEY_LEFT"},
-        {"key_number" : 265, "cmd_name": "__f1", "title": "KEY_F1"},
+        {"key_number" : 261, "cmd_name": "_right", "title": "KEY_RIGHT"},
+        {"key_number" : 260, "cmd_name": "_left", "title": "KEY_LEFT"},
+        {"key_number" : 265, "cmd_name": "_f1", "title": "KEY_F1"},
     ]
+    """
 
-    def __init__(self, player, vk):
+    def __init__(self):
+    #def __init__(self , player, vk):
         global PG_NAME, PG_VERSION
 
-        self.player = player
-        self.vk = vk
+        #self.player = player
+        #self.vk = vk
 
         # штшциализирую ncurses
         self.curses_property = CursesProperty()
@@ -159,7 +168,13 @@ class CursesApplication(object):
         self.rows = self.curses_property.rows
         self.cols = self.curses_property.cols
 
-        self.__view_ui_player()
+        #self.__view_ui_player()
+
+
+    def view_login_form(self):
+        """ Переделать на команду """
+        #login = LoginWin(self.win, 10, 20, self.rows/2, self.cols/2)
+        self.login = LoginWin(self.win, self.rows/2 - 10, self.rows/2 - 20, self.rows/2, self.cols/2, self.curses_property.COLOR_NUMBER)
 
     def __view_ui_player(self):
         # выбрана левая панель с треками
@@ -212,30 +227,33 @@ class CursesApplication(object):
         self.refresh()
 
     """ Пасринг команд от пользователя. Сопоставление с объявленными командами """
+    """
     def get_command(self):
         ch = self.curses_property.stdscr.getch()
         for cmd in self.keys_cmd:
             if ch == cmd["key_number"]:
                 return cmd["cmd_name"]
-
         return None
+    """
 
     """ Переместить вверх """
-    def __up(self):
+    """
+    def _up(self):
         if self.is_select_trak_list is True:
             self.track_list.move_up()
         elif self.is_view_albom_list is True:
             self.alboms_win.move_up()
-
+    """
     """ Переместить вниз """
-    def __down(self):
+    """
+    def _down(self):
         if self.is_select_trak_list is True:
             self.track_list.move_down()
         elif self.is_view_albom_list is True:
             self.alboms_win.move_down()
-
-    """ Уменьшаю громкость """
-    def __left(self):
+    """
+    """ Уменьшаю громкость 
+    def _left(self):
         sound_vol = float(self.player.get_sound_volume())
         if sound_vol > 0.01:
             sound_vol -= float(round(float(0.05), 2))
@@ -243,8 +261,8 @@ class CursesApplication(object):
                 self.player.set_sound_volume(round(sound_vol,2))
                 self.system_info.set_sound_volume(self.player.get_sound_volume())
 
-    """ Увеличиваю громкость """
-    def __right(self):
+    Увеличиваю громкость 
+    def _right(self):
         sound_vol = float(self.player.get_sound_volume())
         if sound_vol < 1:
             sound_vol += float(round(float(0.05), 2))
@@ -253,8 +271,8 @@ class CursesApplication(object):
                 self.system_info.set_sound_volume(self.player.get_sound_volume())
 
 
-    """ Выбор трека для воспроизведения """
-    def __enter(self):
+    Выбор трека для воспроизведения 
+    def _enter(self):
         if self.is_select_trak_list is True:
             track = self.track_list.get_select_data()
             self.player.pause()
@@ -275,8 +293,9 @@ class CursesApplication(object):
             self.track_list.show()
             self.track_list.hide_cursor()
 
-    """ Поставить/снять с паузы """
-    def __space(self):
+
+    Поставить/снять с паузы 
+    def _space(self):
         if self.player.playing == True:
                 self.system_info.set_status_paused()        
                 self.player.pause()
@@ -284,11 +303,13 @@ class CursesApplication(object):
             self.system_info.set_status_playning()
             self.player.play()
 
-    def __key_q(self):
+
+    def _key_q(self):
         self.is_stop = True
 
-    """ Промотать вперед """
-    def __key_d(self):
+
+    Промотать вперед
+    def _key_d(self):
         tm = self.player.time()
         if tm is not None:
             cur, total = tm
@@ -300,8 +321,9 @@ class CursesApplication(object):
                     self.player.seek(total-1)
                 self.player.play()
 
-    """ Промотать назад """
-    def __key_a(self):
+
+    Промотать назад
+    def _key_a(self):
         tm = self.player.time()
         if tm is not None:
             cur, total = tm
@@ -313,7 +335,9 @@ class CursesApplication(object):
                     self.player.seek(0)
                 self.player.play()
 
-    def __key_tab(self):
+
+    TAB - переключить.  
+    def _key_tab(self):
         # при выборе "пингвина" TAB не будет работать
         #if self.is_view_albom_list is False:
         if self.is_select_trak_list is True:
@@ -326,7 +350,7 @@ class CursesApplication(object):
         self.is_select_trak_list = not self.is_select_trak_list
 
 
-    def __key_f1(self):
+    def _key_f1(self):
         if self.is_view_albom_list is True:
             self.is_view_albom_list = False
             self.is_select_trak_list = False        
@@ -335,6 +359,8 @@ class CursesApplication(object):
 
         self.is_select_trak_list = True
         self.refresh()
+
+    """
 
     """ Загрузка данных """
     def __load_data(self):
@@ -350,6 +376,7 @@ class CursesApplication(object):
         
         # отмечаю альбом проигрываемый
         self.alboms_win.get_select_data()
+
     
     """ Выполняет обновление данных приложения """
     def update_data(self):
@@ -395,12 +422,13 @@ class CursesApplication(object):
             self.navigation.refresh()
 
     """ Цикл для curses и по совместительству основной цикл приложения  """
+    """
     def loop(self):
         self.__load_data()        
         #self.__is_view_ui_player = False
         #self.view_ui_player()
         
-        #login = LoginWin(self.win, 10, 20, self.rows/2, self.cols/2)
+        login = LoginWin(self.win, 10, 20, self.rows/2, self.cols/2)
        
         self.is_stop = False
         
@@ -409,11 +437,14 @@ class CursesApplication(object):
             try:
                 command = self.get_command()
                 if command is not None:
+                    #pass
+                    #print command
                     # выполняю команду
                     getattr(self, command)()
+                    #print f
             except AttributeError as e:
                 print e
-            
+    """        
 
 
 class ClockThread(threading.Thread):
@@ -437,8 +468,40 @@ class ClockThread(threading.Thread):
 
 """ Производит инициализация curses и gstreamer """
 class Application:
+
+    """ Список кнопок и их обработчиков """
+    keys_cmd = [
+        {"key_number" : 9, "cmd_name": "key_tab", "title": "KEY_TAB"},
+        {"key_number" : 10, "cmd_name": "key_enter", "title": "KEY_ENTER"},
+        {"key_number" : 32, "cmd_name": "key_space", "title": "KEY_SPACE"},
+        {"key_number" : 100, "cmd_name": "key_d", "title": "KEY_d"},
+        {"key_number" : 68, "cmd_name": "key_d", "title": "KEY_D"},
+        {"key_number" : 113, "cmd_name": "key_q", "title": "KEY_q"},
+        {"key_number" : 68, "cmd_name": "key_q", "title": "KEY_Q"},
+        {"key_number" : 97, "cmd_name": "key_a", "title": "KEY_a"},
+        {"key_number" : 65, "cmd_name": "key_a", "title": "KEY_A"},
+        {"key_number" : 259, "cmd_name": "key_up", "title": "KEY_UP"},
+        {"key_number" : 258, "cmd_name": "key_down", "title": "KEY_DOWN"},
+
+        {"key_number" : 261, "cmd_name": "key_right", "title": "KEY_RIGHT"},
+        {"key_number" : 260, "cmd_name": "key_left", "title": "KEY_LEFT"},
+        {"key_number" : 265, "cmd_name": "key_f1", "title": "KEY_F1"},
+    ]
+
     def __init__(self):
-        
+        # 1. Создать пользовательский интерфейс
+        # 2. Получить объект vk
+        # 3. Авторизоваться
+        # 4. Загрузить плейлисты и треки
+        # 5. Работать в штатном режиме
+        self.is_stop = False
+        self._is_login = False
+        # стартую ui
+        self.curses_app = CursesApplication()
+        # обработка комманд для приложения, через паттерн комманда
+        self.command_interface = CursesApplicationInterface(self.curses_app)
+
+        return
         # получаю доступ к вк
         vk = Storage(login, password, 'VK').get()
 
@@ -450,13 +513,39 @@ class Application:
         # устанавливаю плеер, запускается в отдельном потоке
         self.play = PlayerApp()
         # стартую ui
-        self.ca = CursesApplication(self.play, vk)
+        # обработка комманд для приложения, через паттерн комманда
+        #self.command_interface = CursesApplicationInterface(self.curses_app)
+
         # стартую отдельный поток, для генерации событий, т.к. не работают с ncurses сигналы. ХЗ почему. Странно очень
         clock = ClockThread(self.ca)
         clock.start()
-        
-    def run(self):
-        self.ca.loop()
+    
+    def _get_command(self):
+        ch = self.curses_app.curses_property.stdscr.getch()
+        for cmd in self.keys_cmd:
+            if ch == cmd["key_number"]:
+                return cmd["cmd_name"]
+        return None
+
+    def loop(self):
+        while self.is_stop is False:
+            #if True:
+            try:
+                # вывожу окно для ввода логина и пароля
+                if self._is_login is False:
+                    self.curses_app.view_login_form()
+                else:
+                    command_name = self._get_command()
+                    if command_name is not None:
+                        # выполняю команду
+                        print command_name
+                        getattr(self.command_interface, command_name)()
+                        #print f
+            except AttributeError as e:
+                print e
+    
+        #self.ca.loop()
+
 
 
 if __name__ == '__main__':
@@ -471,6 +560,6 @@ if __name__ == '__main__':
     password = "putinvvico24"
 
     app = Application()
-    app.run()
+    app.loop()
 
     curses.endwin()
