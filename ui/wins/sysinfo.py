@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from win_base import BaseWin
+from base import BaseWin
 
-"""
-Окно с системной информацией.
-Тут приводится значения громкости, выставленной для приложения, статус и проч.
-"""
-class SystemInfoWin(BaseWin):
+
+class SysInfoWin(BaseWin):
+    """
+    Окно с системной информацией.
+    Тут приводится значения громкости, выставленной для приложения, статус и проч.
+    """
     def __init__(self, parent_win, rows, cols, x, y, pg_name, pg_version, color_content):
         super(SystemInfoWin, self).__init__(parent_win, rows, cols, x, y)
         

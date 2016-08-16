@@ -3,11 +3,9 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 #""" Базовый клас для окон """
-#__metaclass__ = type
-
 class BaseWin(object):
     """ Базовый абстрактный класс для окон """
-    #__metaclass__ = ABCMeta
+    __metaclass__ = ABCMeta
 
     def __init__(self, parent_win, rows, cols, x, y, color_header=None):
         self.parent_win = parent_win
