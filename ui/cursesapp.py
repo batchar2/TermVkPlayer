@@ -5,6 +5,8 @@ import curses
 
 from wins.sysinfo import SysInfoWin
 
+from actions import ActionLoginForm
+
 class CursesProperty(object):
     """ Свойства и переменные curses для удобства сведены в один класс """
     def __init__(self):
@@ -112,6 +114,8 @@ class CursesApplication(object):
     PLAYER_VERSION = ""
     storage = None
 
+    _sysinfo_win = None
+
     def __init__(self, player_name, player_version, storage):
         self.PLAYER_NAME = player_name
         self.PLAYER_VERSION = player_version
@@ -120,22 +124,41 @@ class CursesApplication(object):
 
         self.curses_property = CursesProperty()
 
-        self._sysinfo = SysInfoWin(self.curses_property.general_win, 6, self.curses_property.cols/5, 0, 0, 
+        
+    @property
+    def sysinfo_win(self):
+        return self._sysinfo_win
+
+
+    """ Перерисовка всего """
+    def refresh(self):
+        self.curses_property.screen.refresh()
+        
+        if self._sysinfo_win is not None:
+            self._sysinfo_win.refresh()
+
+        return True
+
+
+    """ Рисование интерфейса программы всей"""
+    def makeui(self):
+        self._sysinfo_win = SysInfoWin(self.curses_property.general_win, 6, self.curses_property.cols/5, 0, 0, 
                                     self.PLAYER_NAME, self.PLAYER_VERSION, self.curses_property.COLOR_CONTENT)
 
-    @property
-    def sysinfo(self):
-        return self._sysinfo
+        return True
 
 
-    def refresh(self):
-        print "CursesApplication.refresh"
-        
+    """ Рисование интерфейса входа """
+    def action_login(self):
+        width, height = 8, 50
+        action = ActionLoginForm(self.curses_property.general_win, width, height, 
+                                        self.curses_property.rows/2 - width/2, 
+                                        self.curses_property.cols/2 - height/2, 
+                                        self.curses_property.COLOR_CONTENT)
+        r = action(self.storage, self)
+        del action
+        return r
 
-        self.curses_property.screen.refresh()
-        #self.curses_property.general_win.refresh()
-
-        self._sysinfo.refresh()
 
     """ Получить символ (команду) через ввод ncurses """
     def getch(self):

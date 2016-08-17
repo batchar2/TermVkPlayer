@@ -10,8 +10,7 @@ from storage.storage import Storage
 
 from ui.cursesapp import CursesApplication
 
-
-from ui.commands import CommandInterfaces, CommandLogin, CommandKeyEnter, CommandRefresh
+from ui.commands import CommandInterfaces, UnexpectedCommandError, CommandMakeUI, CommandLogin, CommandKeyEnter, CommandRefresh
 
 PLAYER_NAME = "VkTp"
 PLAYER_VERSION = "0.6.1"
@@ -27,26 +26,34 @@ class Application(object):
         self._curses_app = CursesApplication(PLAYER_NAME, PLAYER_VERSION, self.storage)
 
         self._add_commands()
-        # перерисовываем окно
-        self.run_command(cmd_name="refresh")
+       
+        # Добавляю публичный метод для выполнения команд, экземпляр класса CommandInterfaces можно вызывать как функцию 
+        self.run_command = self._command_interface
+
 
     """ Добавление команд, которые поддерживает система через ООП нотацию. """
     def _add_commands(self):
-        self._command_interface.add_command("login", CommandLogin(self.curses_app, self.storage), None)
-        self._command_interface.add_command("refresh", CommandRefresh(self.curses_app, self.storage), None)
+        self._command_interface.add_command("makeui", CommandMakeUI(self.curses_app, self.storage), [])
+        self._command_interface.add_command("login", CommandLogin(self.curses_app, self.storage), [])
+        self._command_interface.add_command("refresh", CommandRefresh(self.curses_app, self.storage), [])
         self._command_interface.add_command("key_enter", CommandKeyEnter(self.curses_app, self.storage), [10,])
 
-    def run_loop(self):
-        while self._is_stop is False:
-            ch = self.curses_app.getch()
 
-    """ Исполнение команды """
-    def run_command(self, cmd_name=None, key_number=None):
-        print "run_command", cmd_name, key_number
-        if cmd_name is not None:
-            self._command_interface(cmd_name=cmd_name)
-        elif key_number is not None:
-            self._command_interface(key_number=key_number)
+    def run_loop(self):
+        if self.run_command(cmd_name="login") is False:
+            return False
+
+        # перерисовываем окно
+        #self.run_command(cmd_name="makeui")
+        #self.run_command(cmd_name="refresh")
+
+        while self._is_stop is False:
+            try:
+                ch = self.curses_app.getch()
+                self.run_command(key_number=ch)
+            except UnexpectedCommandError as e:
+                pass
+
 
     @property
     def storage(self):
