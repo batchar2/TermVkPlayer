@@ -40,15 +40,19 @@ class VkStorage(BaseStorage):
         self.__count = count
 
 
-    def login(self):
+    def login(self, login=None, password=None):
         """ Авторизвация """
+        if login is not None and password is not None:
+            self.__login = login
+            self.__password = password
+
         self.__vk = vk_api.VkApi(login=self.__login, 
                                     password=self.__password)
         try:
             self.__vk.authorization()
         except vk_api.AuthorizationError as error_msg:
             self.__vk = None
-            return False, "The password/login you entered is incorrect"
+            return False, 'The password/login you entered is incorrect'
         except vk.ConnectionError as error_msg:
             self.__vk = None
             return False, 'Connection aborted'

@@ -22,8 +22,8 @@ class Application(object):
     _command_interface = CommandInterfaces()
     
     def __init__(self):
-        self._storage = Storage('vk')
-        self._curses_app = CursesApplication(PLAYER_NAME, PLAYER_VERSION, self.storage)
+        self._storage = Storage('VK').get()
+        self._curses_app = CursesApplication(PLAYER_NAME, PLAYER_VERSION, self._storage)
 
         self._add_commands()
        
@@ -44,8 +44,8 @@ class Application(object):
             return False
 
         # перерисовываем окно
-        #self.run_command(cmd_name="makeui")
-        #self.run_command(cmd_name="refresh")
+        self.run_command(cmd_name="makeui")
+        self.run_command(cmd_name="refresh")
 
         while self._is_stop is False:
             try:
