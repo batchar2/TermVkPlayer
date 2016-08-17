@@ -31,7 +31,7 @@ class VkStorage(BaseStorage):
         '18': 'Other',
     }
 
-    def __init__(self, login, password, count):
+    def __init__(self, login=None, password=None, count=9999):
         super(VkStorage, self).__init__(login, password, count)
         self.__alboms = None
         self.__tracks = None

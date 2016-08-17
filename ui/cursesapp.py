@@ -6,10 +6,9 @@ import curses
 from wins.sysinfo import SysInfoWin
 
 class CursesProperty(object):
-
-	""" Свойства и переменные curses для удобства сведены в один класс """
-	def __init__(self):
-		self._stdscr = curses.initscr()
+    """ Свойства и переменные curses для удобства сведены в один класс """
+    def __init__(self):
+        self._stdscr = curses.initscr()
         self._stdscr.clear()
 
         curses.cbreak()
@@ -24,12 +23,13 @@ class CursesProperty(object):
         self._stdscr.keypad(1)
         
         # Создаю главное окно. Конечно, можно было и без него обойтись, однако на будующее зазор оставлю
-        self._screen = curses.newwin(self.rows, self.cols, 0, 0)
+        self._gen_win = curses.newwin(self.rows, self.cols, 0, 0)
     
         self._initclr()
 
-    """ Инициализация цветов """
-   	def _initclr(self):
+    
+    #""" Инициализация цветов """
+    def _initclr(self):
         # инициализация цветовых схем
         if curses.can_change_color(): 
             init_color(-1, 0, 0, 0)
@@ -86,29 +86,57 @@ class CursesProperty(object):
     """ Возврат указателя на главное окно, на главном окне выводятся все остальные подокна """
     @property
     def screen(self):
-    	return self._screen
+        return self._stdscr
+
+    @property
+    def general_win(self):
+        return self._gen_win
 
     @property
     def rows(self):
-    	rows, cols = self.stdscr.getmaxyx()
-    	return rows
+        rows, cols = self._stdscr.getmaxyx()
+        return rows
 
     @property
     def cols(self):
-    	rows, cols = self.stdscr.getmaxyx()
-    	return cols
+        rows, cols = self._stdscr.getmaxyx()
+        return cols
 
 
 
 
 class CursesApplication(object):
+    
+    """ Фасад GUI-интерфейса """
+    PLAYER_NAME = ""
+    PLAYER_VERSION = ""
+    storage = None
+
+    def __init__(self, player_name, player_version, storage):
+        self.PLAYER_NAME = player_name
+        self.PLAYER_VERSION = player_version
+
+        self.storage = storage
+
+        self.curses_property = CursesProperty()
+
+        self._sysinfo = SysInfoWin(self.curses_property.general_win, 6, self.curses_property.cols/5, 0, 0, 
+                                    self.PLAYER_NAME, self.PLAYER_VERSION, self.curses_property.COLOR_CONTENT)
+
+    @property
+    def sysinfo(self):
+        return self._sysinfo
 
 
-	def __init__(self, player_name, player_version):
-		self.curses_property = CursesProperty()
+    def refresh(self):
+        print "CursesApplication.refresh"
+        
 
-		self.sysinfo = SysWin(self.win, 6, self.cols/5, 0, 0, 
-                        			player_name, player_version, self.curses_property.COLOR_CONTENT)
+        self.curses_property.screen.refresh()
+        #self.curses_property.general_win.refresh()
 
+        self._sysinfo.refresh()
 
-
+    """ Получить символ (команду) через ввод ncurses """
+    def getch(self):
+        return self.curses_property.screen.getch()

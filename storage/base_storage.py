@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 class BaseStorage(object):
     """ Базовый абстрактный класс хранилища данных """
-    #__metaclass__ = ABCMeta
+    __metaclass__ = ABCMeta
 
     def __init__(self, login, password, count):
         self.__login = login

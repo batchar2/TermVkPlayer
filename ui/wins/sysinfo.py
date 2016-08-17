@@ -9,7 +9,7 @@ class SysInfoWin(BaseWin):
     Тут приводится значения громкости, выставленной для приложения, статус и проч.
     """
     def __init__(self, parent_win, rows, cols, x, y, pg_name, pg_version, color_content):
-        super(SystemInfoWin, self).__init__(parent_win, rows, cols, x, y)
+        super(SysInfoWin, self).__init__(parent_win, rows, cols, x, y)
         
         self.color_content = color_content
         self.win_set_title(u"System info")

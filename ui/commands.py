@@ -2,12 +2,26 @@
 
 from abc import ABCMeta, abstractmethod
 
+
+class UnexpectedCommandError(Exception):
+	""" Исключение, которое должно выпадать при попытки выполнить неизвестную команду """
+	def __init__(self, message, error=None):
+		self._message = message
+		self._error = error
+
+	def __str__(self):
+		return self._message
+
+	def __repr_(self):
+		return self._message
+
+
 class Command(object):
-	 __metaclass__= ABCMeta
+	__metaclass__= ABCMeta
 	""" Абстрактный класс для паттерна "Команда". """
 	
-	def __init__(self, obj, storage):
-		self._obj = obj
+	def __init__(self, curses_app, storage):
+		self._curses_app = curses_app
 		self._storage = storage
 
 	@property
@@ -15,8 +29,8 @@ class Command(object):
 		return self._storage
 
 	@property
-	def obj(self):
-		return self._obj
+	def curses_app(self):
+		return self._curses_app
 
 
 	@abstractmethod
@@ -28,17 +42,29 @@ class Command(object):
 class CommandLogin(Command):
 	""" Команда вывода окна для "логинизации" """
 
-	def __init__(self, obj, storage):
-		super(CommandLogin, self).__init__(obj, storage)
+	def __init__(self, curses_app, storage):
+		super(CommandLogin, self).__init__(curses_app, storage)
 
 	def __call__(self):
 		print "call"
 
 
+class CommandRefresh(Command):
+	""" Команда перерисовки всего содержимого экрана """
+
+	def __init__(self, curses_app, storage):
+		super(CommandRefresh, self).__init__(curses_app, storage)
+
+	def __call__(self):
+		self.curses_app.refresh()
+
+
+
+
 class CommandKeyEnter(Command):
 	""" Команда Enter """
-	def __init__(self, obj, storage):
-		super(CommandLogin, self).__init__(obj, storage)
+	def __init__(self, curses_app, storage):
+		super(CommandKeyEnter, self).__init__(curses_app, storage)
 
 	def __call__(self):
 		print "call"
@@ -53,18 +79,31 @@ class CommandInterfaces(object):
 	""" Добавление команды в коммандный интерфейс
 		cmd_name - имя команды
 		cmd - объект команды
+		key - номер клавиши
 	"""
-	def add_command(self, cmd_name, cmd):
-		self._commands.append({cmd_name: cmd})
+	def add_command(self, cmd_name, cmd, keys):
+		self._commands.append({"name": cmd_name, "obj": cmd, "keys": keys})
 
 	""" Вызов интерфейса с параметром имя команды.
 		True - успешно отработано
 		False - косяк
-		None - жеский косяк, исправить на исключение
+		В случае ошибки исключение UnexpectedCommandError
 	"""
-	def __call__(self, cmd_name):
-		if cmd_name in self._commands:
-			return self._commands[cmd_name]()
+	def __call__(self, cmd_name=None, key_number=None):
+		print cmd_name, self._commands
+		command = None
+		if cmd_name is not None:
+			cmd = filter(lambda e: e['name'] == cmd_name, self._commands)
+			if len(cmd) > 0:
+				command = cmd[0]["obj"]
+		elif key_number is not None:
+			command = None#filter(lambda elm: elm["keys"] )
 		else:
-			return None
+			raise UnexpectedCommandError("Undefine command")
+
+		print command
+		if command is None:
+			raise UnexpectedCommandError("Undefine command")
+		else:
+			return command()
 
