@@ -6,6 +6,11 @@ import curses
 """
 class WinBase(object):
 
+    COLOR_BORDER = 1
+    COLOR_SELECTED_TRACK = 2
+    COLOR_NON_SELECTED_TRACK = 3
+    COLOR_PLAY_TRACK = 4
+
     _stdscr = None
     _instance = None
     _init_replaced = False
@@ -21,6 +26,7 @@ class WinBase(object):
         return cls.__instance
 
     def __init__(self):
+        """ Инициализирую curses. Инициализирую переменные цветов """
         self._stdscr = curses.initscr()
         self._stdscr.clean()
         
@@ -32,6 +38,12 @@ class WinBase(object):
         curses.curs_set(0)
         curses.start_color()
         curses.use_default_colors()
+
+
+        curses.init_pair(self.COLOR_BORDER, curses.COLOR_WHITE, curses.COLOR_WHITE)
+        curses.init_pair(self.COLOR_SELECTED_TRACK, curses.COLOR_CYAN, curses.COLOR_CYAN)
+        curses.init_pair(self.COLOR_NON_SELECTED_TRACK, curses.COLOR_BLUE, curses.COLOR_BLUE)
+        curses.init_pair(self.COLOR_PLAY_TRACK, curses.COLOR_YELLOW, curses.COLOR_YELLOW)
 
 
     @property
