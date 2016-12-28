@@ -1,36 +1,46 @@
 from .CursesInstance import CursesInstance
 
-from .forms.BuilderForm import BuilderLogin, BuilderPlayer 
+from .controlers import ControlerLogin
+from .controlers import ControlerPlayer
+
+#from .forms.BuilderForm import BuilderLogin, BuilderPlayer 
 
 
 
-""" Текстовый интерфейс приложения. Реализован на ncurses """
-class TerminalGUI:
+""" Текстовый интерфейс приложения. Реализован на ncurses
+ 
+Реализуется паттерн State.
+Переключает вид и контролер 
+Получаются подпрограммы, события обрабатываются соответствующим классом
+При изменении глобального состояния программы: форма логина, окно плеера - подменяем соответствующий обработчик. 
+"""
+class ContextGUI:
 
     _curses_instance = None
-    _color_sheme = None
-
-    _builder_login = None
-    _builder_player = None
+    _controler = None
 
     def __init__(self):
         self._curses_instance = CursesInstance()
 
-        self._builder_login = BuilderLogin(self._curses_instance)
-        self._builder_player = BuilderPlayer(self._curses_instance)
+        
 
-        #rows, cols = self._curses_instance.stdscr.getmaxyx()
-
-
-        #self._info = WinPlayerInfo(self._curses_instance, 0, 0, 10, 10)
-        #self._header.refresh()
+        #self._builder_login = BuilderLogin(self._curses_instance)
+        #self._builder_player = BuilderPlayer(self._curses_instance)
 
 
-        #self._header.refresh()
+    def set_login_interface(self):
+        self._controler = ControlerLogin(self._curses_instance)
+        
+    def set_player_interface(self):
+        self._controler = ControlerPlayer(self._curses_instance)
 
     def __call__(self):
+        self._controler.view_gui()
+
+
         while True:
-            ch = self._curses_instance.stdscr.getch()
-            print(ch)
+            symbol = self._curses_instance.stdscr.getch()
+            self._controler(symbol)
+            #print(ch)
 
 

@@ -1,1 +1,1 @@
-from .tgui import TerminalGUI
+from .tgui import ContextGUI
